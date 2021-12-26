@@ -25,7 +25,7 @@ from homeassistant.util import Throttle
 
 _LOGGER = logging.getLogger(__name__)
 
-DEFAULT_NAME = "atome"
+DEFAULT_NAME = "keyatome"
 
 LIVE_SCAN_INTERVAL = timedelta(seconds=30)
 DAILY_SCAN_INTERVAL = timedelta(seconds=150)
@@ -33,11 +33,11 @@ WEEKLY_SCAN_INTERVAL = timedelta(hours=1)
 MONTHLY_SCAN_INTERVAL = timedelta(hours=1)
 YEARLY_SCAN_INTERVAL = timedelta(days=1)
 
-LIVE_NAME = "Atome Live Power"
-DAILY_NAME = "Atome Daily"
-WEEKLY_NAME = "Atome Weekly"
-MONTHLY_NAME = "Atome Monthly"
-YEARLY_NAME = "Atome Yearly"
+LIVE_NAME = "Key Atome Live Power"
+DAILY_NAME = "Key Atome Daily"
+WEEKLY_NAME = "Key Atome Weekly"
+MONTHLY_NAME = "Key Atome Monthly"
+YEARLY_NAME = "Key Atome Yearly"
 
 LIVE_TYPE = "live"
 DAILY_TYPE = "day"

@@ -8,7 +8,7 @@ repos:
           - --quiet
           - --format=custom
           - --configfile=.bandit.yaml
-        files: ^pykeyatome/.+\.py$
+        files: ^custom_components/.+\.py$
   - repo: https://github.com/python/black
     rev: 21.7b0
     hooks:
@@ -36,7 +36,7 @@ repos:
           - pydocstyle==5.0.1
         args:
           - --ignore=E501,W503,F401
-        files: ^pykeyatome/.+\.py$
+        files: ^custom_components/.+\.py$
   - repo: https://github.com/pre-commit/mirrors-isort
     rev: v4.3.21
     hooks:
@@ -45,12 +45,12 @@ repos:
           - toml
         args:
           - --diff
-        files: ^(pykeyatome|tests)/.+\.py$
+        files: ^custom_components/.+\.py$
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.790
     hooks:
       - id: mypy
-        files: ^pykeyatome/.+\.py$
+        files: ^custom_components/.+\.py$
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.4.0
     hooks:
@@ -63,7 +63,7 @@ repos:
     rev: 5.0.2
     hooks:
       - id: pydocstyle
-        files: ^((pykeyatome|tests)/.+)?[^/]+\.py$
+        files: ^(custom_components/.+)?[^/]+\.py$
   - repo: https://github.com/gruntwork-io/pre-commit
     rev: v0.1.12
     hooks:

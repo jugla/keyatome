@@ -29,4 +29,5 @@ jobs:
       - uses: KTibow/ha-blueprint@stable
         name: CI
         with:
+          HASSFEST: DISABLED
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,5 +1,4 @@
 {
   "name": "keyatome",
-  "domains": ["sensor"],
-  "iot_class": "cloud_polling"
+  "domains": ["sensor"]
 }

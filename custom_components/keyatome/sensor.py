@@ -2,7 +2,8 @@
 from datetime import timedelta
 import logging
 
-from pyatome.client import AtomeClient, PyAtomeError
+# Import AtomeClient to connect to server
+from pyatome.client import AtomeClient
 import voluptuous as vol
 
 from homeassistant.components.sensor import (
@@ -59,11 +60,9 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     username = config[CONF_USERNAME]
     password = config[CONF_PASSWORD]
 
-    try:
-        atome_client = AtomeClient(username, password)
-        atome_client.login()
-    except PyAtomeError as exp:
-        _LOGGER.error(exp)
+    atome_client = AtomeClient(username, password)
+    if not atome_client.login():
+        _LOGGER.error("No login available for atome server")
         return
 
     data = AtomeData(atome_client)
@@ -114,7 +113,8 @@ class AtomeData:
     def _retrieve_live(self):
         values = self.atome_client.get_live()
         if (
-            values.get("last")
+            values is not None
+            and values.get("last")
             and values.get("subscribed")
             and (values.get("isConnected") is not None)
         ):
@@ -143,7 +143,7 @@ class AtomeData:
     def _retrieve_period_usage(self, period_type):
         """Return current daily/weekly/monthly/yearly power usage."""
         values = self.atome_client.get_consumption(period_type)
-        if values.get("total") and values.get("price"):
+        if values is not None and values.get("total") and values.get("price"):
             period_usage = values["total"] / 1000
             period_price = values["price"]
             _LOGGER.debug("Updating Atome %s data. Got: %d", period_type, period_usage)

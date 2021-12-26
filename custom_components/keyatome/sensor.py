@@ -35,7 +35,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_NAME = "atome"
 
-DOMAIN = "atome"
+DOMAIN = "keyatome"
 
 ATTRIBUTION = "Data provided by TotalEnergies"
 

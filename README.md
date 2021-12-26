@@ -1,5 +1,5 @@
 # KeyAtome
-Home Assistant component to handle key atom
+Home Assistant component to handle key atom.
 
 # Change Logs
 The first version reprensents the Atom component in Home Assistant 2021.12.4 (@baqs)

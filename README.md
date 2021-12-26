@@ -1,5 +1,7 @@
 # KeyAtome
-Home Assistant component to handle key atom.
+![GitHub release](https://img.shields.io/github/release/jugla/KeyAtome)
+
+Home Assistant component to handle key atom, a Linky-compatible device made by Total/Direct-Energie.
 
 # Change Logs
 The first version reprensents the Atom component in Home Assistant 2021.12.4 (@baqs)

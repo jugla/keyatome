@@ -1,0 +1,11 @@
+{
+  "domain": "keyatome",
+  "name": "KeyAtome Linky",
+  "version" : "0.0.0",
+  "codeowners": ["@baqs", "@jugla"],
+  "documentation": "https://github.com/jugla/KeyAtome",
+  "issue_tracker": "https://github.com/jugla/KeyAtome/issues",
+  "config_flow": false,
+  "requirements": ["pyatome==0.1.1"],
+  "iot_class": "cloud_polling"
+}

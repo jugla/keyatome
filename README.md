@@ -40,7 +40,8 @@ sensor:
 The first version reprensents the Atom component in Home Assistant 2021.12.4 (@baqs)
 This library is a fork of this in order to implement new feature.
 
-For release V0.0.1 and V1.0.0 : the name of sensor are `sensor.key_atome_xxx
+For release V0.0.1 and V1.0.0 : the name of sensor are `sensor.key_atome_xxx`
+
 Since release V2.0.0 : the name of sensor are `sensor.atome_xxx` (like HA atome component)
 
 

@@ -17,7 +17,7 @@ repos:
           - --safe
           - --quiet
         language_version: python3
-        files: ^((pykeyatome|tests)/.+)?[^/]+\.py$
+        files: ^(custom_components/.+)?[^/]+\.py$
   - repo: https://github.com/codespell-project/codespell
     rev: v1.16.0
     hooks:

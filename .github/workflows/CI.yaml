@@ -6,11 +6,13 @@ on:
     branches:
       - dev
       - master
+      - main
 
   push:
     branches:
       - dev
       - master
+      - main
 
 jobs:
 

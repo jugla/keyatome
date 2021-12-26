@@ -3,13 +3,6 @@
 
 Home Assistant component to handle key atom, a Linky-compatible device made by Total/Direct-Energie.
 
-# Breaking changes
-The first version reprensents the Atom component in Home Assistant 2021.12.4 (@baqs)
-This library is a fork of this in order to implement new feature.
-
-For release V0.0.1 and V1.0.0 : the name of sensor are `sensor.key_atome_xxx
-Since release V2.0.0 : the name of sensor are `sensor.atome_xxx` (like HA atome component)
-
 ## Installation
 Either use HACS (default), either manual
 ### [HACS](https://hacs.xyz/) (Home Assistant Community Store) [under request]
@@ -41,7 +34,15 @@ sensor:
     password: YOUR_ATOME_PASSWORD
 ```
 
-**Check that *atome* of HomeAssistant is not activated (i.e. declared in configuration.yaml) to avoid too many request on Atome Server**
+**Check that *atome* of HomeAssistant is not activated (i.e. declared in configuration.yaml) to avoid too many request on Atome Server and conflict name for sensors name**
+
+## Breaking changes
+The first version reprensents the Atom component in Home Assistant 2021.12.4 (@baqs)
+This library is a fork of this in order to implement new feature.
+
+For release V0.0.1 and V1.0.0 : the name of sensor are `sensor.key_atome_xxx
+Since release V2.0.0 : the name of sensor are `sensor.atome_xxx` (like HA atome component)
+
 
 ## Acknowledgments
 * Thanks to the 1rst implementation performed by BaQs for Home Assistant.

@@ -5,14 +5,14 @@ from datetime import timedelta
 DOMAIN = "keyatome"
 
 # Sensor default name
-DEFAULT_NAME = "atome"
+DEFAULT_NAME = "Atome"
 
 # sensor name
-LIVE_NAME = "Atome Live Power"
-DAILY_NAME = "Atome Daily"
-WEEKLY_NAME = "Atome Weekly"
-MONTHLY_NAME = "Atome Monthly"
-YEARLY_NAME = "Atome Yearly"
+LIVE_NAME_SUFFIX = " Live Power"
+DAILY_NAME_SUFFIX = " Daily"
+WEEKLY_NAME_SUFFIX = " Weekly"
+MONTHLY_NAME_SUFFIX = " Monthly"
+YEARLY_NAME_SUFFIX = " Yearly"
 
 # Attribution
 ATTRIBUTION = "Data provided by TotalEnergies"

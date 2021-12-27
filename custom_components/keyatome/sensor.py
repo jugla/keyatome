@@ -38,15 +38,15 @@ from .const import (
     DEFAULT_NAME,
     DOMAIN,
     LIVE_SCAN_INTERVAL,
-    LIVE_NAME,
+    LIVE_NAME_SUFFIX,
     DAILY_SCAN_INTERVAL,
-    DAILY_NAME,
+    DAILY_NAME_SUFFIX,
     WEEKLY_SCAN_INTERVAL,
-    WEEKLY_NAME,
+    WEEKLY_NAME_SUFFIX,
     MONTHLY_SCAN_INTERVAL,
-    MONTHLY_NAME,
+    MONTHLY_NAME_SUFFIX,
     YEARLY_SCAN_INTERVAL,
-    YEARLY_NAME,
+    YEARLY_NAME_SUFFIX,
     LIVE_TYPE,
     DAILY_TYPE,
     WEEKLY_TYPE,
@@ -93,9 +93,9 @@ async def async_create_period_coordinator(
     return period_coordinator
 
 
-async def async_create_live_coordinator(hass, atome_client):
+async def async_create_live_coordinator(hass, atome_client, name):
     """Create coordinator for live data."""
-    atome_live_end_point = AtomeLiveServerEndPoint(atome_client)
+    atome_live_end_point = AtomeLiveServerEndPoint(atome_client, name)
 
     async def async_live_update_data():
         data = await hass.async_add_executor_job(atome_live_end_point.retrieve_data)
@@ -116,6 +116,13 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     """Set up the Atome sensor."""
     username = config[CONF_USERNAME]
     password = config[CONF_PASSWORD]
+    sensor_root_name = config[CONF_NAME]
+
+    live_sensor_name = sensor_root_name+LIVE_NAME_SUFFIX
+    daily_sensor_name = sensor_root_name+DAILY_NAME_SUFFIX
+    monthly_sensor_name = sensor_root_name+MONTHLY_NAME_SUFFIX
+    weekly_sensor_name = sensor_root_name+WEEKLY_NAME_SUFFIX
+    yearly_sensor_name = sensor_root_name+YEARLY_NAME_SUFFIX
 
     atome_client = AtomeClient(username, password)
     if not await hass.async_add_executor_job(atome_client.login):
@@ -123,28 +130,28 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         return
 
     # Live Data
-    live_coordinator = await async_create_live_coordinator(hass, atome_client)
+    live_coordinator = await async_create_live_coordinator(hass, atome_client, live_sensor_name)
 
     # Periodic Data
     daily_coordinator = await async_create_period_coordinator(
-        hass, atome_client, DAILY_NAME, DAILY_TYPE, DAILY_SCAN_INTERVAL
+        hass, atome_client, daily_sensor_name, DAILY_TYPE, DAILY_SCAN_INTERVAL
     )
     weekly_coordinator = await async_create_period_coordinator(
-        hass, atome_client, WEEKLY_NAME, WEEKLY_TYPE, WEEKLY_SCAN_INTERVAL
+        hass, atome_client, weekly_sensor_name, WEEKLY_TYPE, WEEKLY_SCAN_INTERVAL
     )
     monthly_coordinator = await async_create_period_coordinator(
-        hass, atome_client, MONTHLY_NAME, MONTHLY_TYPE, MONTHLY_SCAN_INTERVAL
+        hass, atome_client, monthly_sensor_name, MONTHLY_TYPE, MONTHLY_SCAN_INTERVAL
     )
     yearly_coordinator = await async_create_period_coordinator(
-        hass, atome_client, YEARLY_NAME, YEARLY_TYPE, YEARLY_SCAN_INTERVAL
+        hass, atome_client, yearly_sensor_name, YEARLY_TYPE, YEARLY_SCAN_INTERVAL
     )
 
     sensors = [
-        AtomeLiveSensor(live_coordinator),
-        AtomePeriodSensor(daily_coordinator, DAILY_NAME, DAILY_TYPE),
-        AtomePeriodSensor(weekly_coordinator, WEEKLY_NAME, WEEKLY_TYPE),
-        AtomePeriodSensor(monthly_coordinator, MONTHLY_NAME, MONTHLY_TYPE),
-        AtomePeriodSensor(yearly_coordinator, YEARLY_NAME, YEARLY_TYPE),
+        AtomeLiveSensor(live_coordinator, live_sensor_name),
+        AtomePeriodSensor(daily_coordinator, daily_sensor_name, DAILY_TYPE),
+        AtomePeriodSensor(weekly_coordinator, weekly_sensor_name, WEEKLY_TYPE),
+        AtomePeriodSensor(monthly_coordinator, monthly_sensor_name, MONTHLY_TYPE),
+        AtomePeriodSensor(yearly_coordinator, yearly_sensor_name, YEARLY_TYPE),
     ]
 
     async_add_entities(sensors, True)
@@ -173,9 +180,9 @@ class AtomeLiveData:
 class AtomeLiveServerEndPoint(AtomeGenericServerEndPoint):
     """Class used to retrieve Live Data."""
 
-    def __init__(self, atome_client):
+    def __init__(self, atome_client, name):
         """Initialize the data."""
-        super().__init__(atome_client, LIVE_NAME, LIVE_TYPE)
+        super().__init__(atome_client, name, LIVE_TYPE)
         self._live_data = AtomeLiveData()
 
     def _retrieve_live(self):
@@ -293,9 +300,9 @@ class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
 class AtomeLiveSensor(AtomeGenericSensor):
     """Class used to retrieve Live Data."""
 
-    def __init__(self, coordinator):
+    def __init__(self, coordinator, name):
         """Initialize the data."""
-        super().__init__(coordinator, LIVE_NAME, LIVE_TYPE)
+        super().__init__(coordinator, name, LIVE_TYPE)
         self._live_data = None
 
         # HA attributes

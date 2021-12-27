@@ -35,4 +35,3 @@ DAILY_TYPE = "day"
 WEEKLY_TYPE = "week"
 MONTHLY_TYPE = "month"
 YEARLY_TYPE = "year"
-

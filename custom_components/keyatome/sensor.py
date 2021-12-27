@@ -118,11 +118,11 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     password = config[CONF_PASSWORD]
     sensor_root_name = config[CONF_NAME]
 
-    live_sensor_name = sensor_root_name+LIVE_NAME_SUFFIX
-    daily_sensor_name = sensor_root_name+DAILY_NAME_SUFFIX
-    monthly_sensor_name = sensor_root_name+MONTHLY_NAME_SUFFIX
-    weekly_sensor_name = sensor_root_name+WEEKLY_NAME_SUFFIX
-    yearly_sensor_name = sensor_root_name+YEARLY_NAME_SUFFIX
+    live_sensor_name = sensor_root_name + LIVE_NAME_SUFFIX
+    daily_sensor_name = sensor_root_name + DAILY_NAME_SUFFIX
+    monthly_sensor_name = sensor_root_name + MONTHLY_NAME_SUFFIX
+    weekly_sensor_name = sensor_root_name + WEEKLY_NAME_SUFFIX
+    yearly_sensor_name = sensor_root_name + YEARLY_NAME_SUFFIX
 
     atome_client = AtomeClient(username, password)
     if not await hass.async_add_executor_job(atome_client.login):
@@ -130,7 +130,9 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         return
 
     # Live Data
-    live_coordinator = await async_create_live_coordinator(hass, atome_client, live_sensor_name)
+    live_coordinator = await async_create_live_coordinator(
+        hass, atome_client, live_sensor_name
+    )
 
     # Periodic Data
     daily_coordinator = await async_create_period_coordinator(

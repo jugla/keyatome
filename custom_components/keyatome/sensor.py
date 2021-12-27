@@ -1,5 +1,4 @@
 """Linky Key Atome."""
-from datetime import timedelta
 import logging
 
 from pykeyatome.client import AtomeClient
@@ -31,8 +30,6 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-_LOGGER = logging.getLogger(__name__)
-
 from .const import (
     ATTRIBUTION,
     ATTR_PREVIOUS_PERIOD_USAGE,
@@ -56,6 +53,8 @@ from .const import (
     MONTHLY_TYPE,
     YEARLY_TYPE,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {

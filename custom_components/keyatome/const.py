@@ -1,4 +1,5 @@
 """Constants for Key Atome."""
+from datetime import timedelta
 
 # Domain name
 DOMAIN = "keyatome"
@@ -16,7 +17,7 @@ YEARLY_NAME = "Atome Yearly"
 # Attribution
 ATTRIBUTION = "Data provided by TotalEnergies"
 
-#Attribute sensor name
+# Attribute sensor name
 ATTR_PREVIOUS_PERIOD_USAGE = "previous_consumption"
 ATTR_PREVIOUS_PERIOD_PRICE = "previous_price"
 ATTR_PERIOD_PRICE = "price"

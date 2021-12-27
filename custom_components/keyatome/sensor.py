@@ -1,4 +1,4 @@
-"""Linky Atome."""
+"""Linky Key Atome."""
 from datetime import timedelta
 import logging
 
@@ -33,33 +33,29 @@ from homeassistant.helpers.update_coordinator import (
 
 _LOGGER = logging.getLogger(__name__)
 
-DEFAULT_NAME = "atome"
-
-DOMAIN = "keyatome"
-
-ATTRIBUTION = "Data provided by TotalEnergies"
-
-ATTR_PREVIOUS_PERIOD_USAGE = "previous_consumption"
-ATTR_PREVIOUS_PERIOD_PRICE = "previous_price"
-ATTR_PERIOD_PRICE = "price"
-
-LIVE_SCAN_INTERVAL = timedelta(seconds=30)
-DAILY_SCAN_INTERVAL = timedelta(seconds=150)
-WEEKLY_SCAN_INTERVAL = timedelta(hours=1)
-MONTHLY_SCAN_INTERVAL = timedelta(hours=1)
-YEARLY_SCAN_INTERVAL = timedelta(days=1)
-
-LIVE_NAME = "Atome Live Power"
-DAILY_NAME = "Atome Daily"
-WEEKLY_NAME = "Atome Weekly"
-MONTHLY_NAME = "Atome Monthly"
-YEARLY_NAME = "Atome Yearly"
-
-LIVE_TYPE = "live"
-DAILY_TYPE = "day"
-WEEKLY_TYPE = "week"
-MONTHLY_TYPE = "month"
-YEARLY_TYPE = "year"
+from .const import (
+    ATTRIBUTION,
+    ATTR_PREVIOUS_PERIOD_USAGE,
+    ATTR_PREVIOUS_PERIOD_PRICE,
+    ATTR_PERIOD_PRICE,
+    DEFAULT_NAME,
+    DOMAIN,
+    LIVE_SCAN_INTERVAL,
+    LIVE_NAME,
+    DAILY_SCAN_INTERVAL,
+    DAILY_NAME,
+    WEEKLY_SCAN_INTERVAL,
+    WEEKLY_NAME,
+    MONTHLY_SCAN_INTERVAL,
+    MONTHLY_NAME,
+    YEARLY_SCAN_INTERVAL,
+    YEARLY_NAME,
+    LIVE_TYPE,
+    DAILY_TYPE,
+    WEEKLY_TYPE,
+    MONTHLY_TYPE,
+    YEARLY_TYPE,
+)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {

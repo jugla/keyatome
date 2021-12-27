@@ -14,7 +14,7 @@ Either use HACS (default), either manual
 ### Manual
 <details><summary>Manual Procedure</summary>
   
-1. Download the folder worldtidesinfocustom from the latest [release](https://github.com/jugla/worldtidesinfocustom/releases) (with right click, save 
+1. Download the folder keyatome from the latest [release](https://github.com/jugla/KeyAtome/releases) (with right click, save 
 link as) 
 1. Place the downloaded directory on your Home Assistant machine in the `config/custom_components` folder (when there is no `custom_components` folder in the 
 folder where your `configuration.yaml` file is, create it and place the directory there) 

@@ -22,6 +22,8 @@ from homeassistant.const import (
     STATE_UNKNOWN,
 )
 from homeassistant.core import callback
+from homeassistant.helpers.device_registry import DeviceEntryType
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -42,7 +44,10 @@ from .const import (
     ATTRIBUTION,
     DAILY_NAME_SUFFIX,
     DAILY_SCAN_INTERVAL,
+    DEBUG_FLAG,
     DEFAULT_NAME,
+    DEVICE_CONF_URL,
+    DEVICE_NAME_SUFFIX,
     DOMAIN,
     LIVE_NAME_SUFFIX,
     LIVE_SCAN_INTERVAL,
@@ -125,10 +130,21 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     weekly_sensor_name = sensor_root_name + WEEKLY_NAME_SUFFIX
     yearly_sensor_name = sensor_root_name + YEARLY_NAME_SUFFIX
 
+    atome_device_name = sensor_root_name + DEVICE_NAME_SUFFIX
+
     atome_client = AtomeClient(username, password)
-    if await hass.async_add_executor_job(atome_client.login) is None:
+    login_value = await hass.async_add_executor_job(atome_client.login)
+    if login_value is None:
         _LOGGER.error("No login available for atome server")
         return
+    if DEBUG_FLAG:
+        _LOGGER.debug("login value is %s",login_value)
+    try:
+       user_reference = login_value["subscriptions"][0]["reference"]
+       _LOGGER.debug("login user reference is %s",user_reference)
+    except:
+       user_reference = None
+       _LOGGER.error("login user reference not found")
 
     # Live Data
     live_coordinator = await async_create_live_coordinator(
@@ -154,13 +170,13 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     )
 
     sensors = [
-        AtomeLiveSensor(live_coordinator, live_sensor_name),
-        AtomePeriodSensor(daily_coordinator, daily_sensor_name, DAILY_PERIOD_TYPE),
-        AtomePeriodSensor(weekly_coordinator, weekly_sensor_name, WEEKLY_PERIOD_TYPE),
+        AtomeLiveSensor(live_coordinator, live_sensor_name, user_reference, atome_device_name),
+        AtomePeriodSensor(daily_coordinator, daily_sensor_name, user_reference, atome_device_name, DAILY_PERIOD_TYPE),
+        AtomePeriodSensor(weekly_coordinator, weekly_sensor_name, user_reference, atome_device_name, WEEKLY_PERIOD_TYPE),
         AtomePeriodSensor(
-            monthly_coordinator, monthly_sensor_name, MONTHLY_PERIOD_TYPE
+            monthly_coordinator, monthly_sensor_name, user_reference, atome_device_name, MONTHLY_PERIOD_TYPE
         ),
-        AtomePeriodSensor(yearly_coordinator, yearly_sensor_name, YEARLY_PERIOD_TYPE),
+        AtomePeriodSensor(yearly_coordinator, yearly_sensor_name, user_reference, atome_device_name, YEARLY_PERIOD_TYPE),
     ]
 
     async_add_entities(sensors, True)
@@ -276,13 +292,16 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
 class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
     """Basic class to store atome client."""
 
-    def __init__(self, coordinator, name, period_type):
+    def __init__(self, coordinator, name, user_reference, atome_device_name, period_type):
         """Initialize the data."""
         super().__init__(coordinator)
         self._name = name
         self._period_type = period_type
+        self._user_reference = user_reference
+        self._atome_device_name = atome_device_name
 
         self._attr_name = self._name
+        self._attr_unique_id = self._name + self._user_reference
 
     async def async_added_to_hass(self) -> None:
         """Register callbacks."""
@@ -302,13 +321,25 @@ class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
         """Update the entity from the latest data."""
         raise NotImplementedError
 
+    @property
+    def device_info(self):
+        """Device info for WorldTideInfo Server."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._user_reference)},
+            manufacturer="AtomeLinkyTotalEnergies",
+            name=self._atome_device_name,
+            model="AtomeLinky",
+            entry_type=DeviceEntryType.SERVICE,
+            configuration_url=DEVICE_CONF_URL,
+        )
+
 
 class AtomeLiveSensor(AtomeGenericSensor):
     """Class used to retrieve Live Data."""
 
-    def __init__(self, coordinator, name):
+    def __init__(self, coordinator, name, user_reference, atome_device_name):
         """Initialize the data."""
-        super().__init__(coordinator, name, LIVE_TYPE)
+        super().__init__(coordinator, name, user_reference, atome_device_name, LIVE_TYPE)
         self._live_data = None
 
         # HA attributes
@@ -339,9 +370,9 @@ class AtomeLiveSensor(AtomeGenericSensor):
 class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
     """Class used to retrieve Period Data."""
 
-    def __init__(self, coordinator, name, period_type):
+    def __init__(self, coordinator, name, user_reference, atome_device_name, period_type):
         """Initialize the data."""
-        super().__init__(coordinator, name, period_type)
+        super().__init__(coordinator, name, user_reference, atome_device_name, period_type)
         self._period_data = AtomePeriodData()
         self._previous_period_data = AtomePeriodData()
 

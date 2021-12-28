@@ -1,6 +1,9 @@
 """Constants for Key Atome."""
 from datetime import timedelta
 
+# Tools
+DEBUG_FLAG = False
+
 # Domain name
 DOMAIN = "keyatome"
 
@@ -13,6 +16,10 @@ DAILY_NAME_SUFFIX = " Daily"
 WEEKLY_NAME_SUFFIX = " Weekly"
 MONTHLY_NAME_SUFFIX = " Monthly"
 YEARLY_NAME_SUFFIX = " Yearly"
+
+# device name
+DEVICE_NAME_SUFFIX = " Device"
+DEVICE_CONF_URL = "https://www.totalenergies.fr/clients"
 
 # Attribution
 ATTRIBUTION = "Data provided by TotalEnergies"

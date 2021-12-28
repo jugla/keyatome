@@ -1,13 +1,5 @@
 """Linky Key Atome."""
 import logging
-
-from pykeyatome.client import (
-    AtomeClient,
-    DAILY_PERIOD_TYPE,
-    MONTHLY_PERIOD_TYPE,
-    WEEKLY_PERIOD_TYPE,
-    YEARLY_PERIOD_TYPE,
-)
 import voluptuous as vol
 
 from homeassistant.components.sensor import (
@@ -35,11 +27,19 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
+from pykeyatome.client import (
+    AtomeClient,
+    DAILY_PERIOD_TYPE,
+    MONTHLY_PERIOD_TYPE,
+    WEEKLY_PERIOD_TYPE,
+    YEARLY_PERIOD_TYPE,
+)
+
 from .const import (
-    ATTRIBUTION,
-    ATTR_PREVIOUS_PERIOD_USAGE,
-    ATTR_PREVIOUS_PERIOD_PRICE,
     ATTR_PERIOD_PRICE,
+    ATTR_PREVIOUS_PERIOD_PRICE,
+    ATTR_PREVIOUS_PERIOD_USAGE,
+    ATTRIBUTION,
     DAILY_NAME_SUFFIX,
     DAILY_SCAN_INTERVAL,
     DEFAULT_NAME,

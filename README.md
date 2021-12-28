@@ -32,7 +32,7 @@ sensor:
   - platform: keyatome
     username: YOUR_ATOME_USERNAME
     password: YOUR_ATOME_PASSWORD
-    name: Atome
+#    name: Atome
 ```
 where name is optional (default value is Atome)
 
@@ -42,9 +42,9 @@ where name is optional (default value is Atome)
 
 For release V0.0.1 and V1.0.0 : the name of sensor are `sensor.key_atome_xxx`
 
-Since release V2.0.0 : the name of sensor are `sensor.atome_xxx` (like HA atome component)
+For release V2.0.0 : the name of sensor are `sensor.atome_xxx` (like HA atome component)
 
-Since release V2.1.0 : the name of sensor are `sensor.NAME_xxx` where NAME is set via configuration.yaml
+Since release V2.1.0 : the name of sensor are `sensor.NAME_xxx` where NAME is set via configuration.yaml (by default Atome to be consistent with HA)
 
 ## Acknowledgments
 * Thanks to the 1rst implementation performed by BaQs for Home Assistant.

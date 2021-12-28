@@ -3,7 +3,6 @@ import logging
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-
 from homeassistant.components.sensor import (
     PLATFORM_SCHEMA,
     STATE_CLASS_MEASUREMENT,
@@ -138,13 +137,13 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         _LOGGER.error("No login available for atome server")
         return
     if DEBUG_FLAG:
-        _LOGGER.debug("login value is %s",login_value)
+        _LOGGER.debug("login value is %s", login_value)
     try:
-       user_reference = login_value["subscriptions"][0]["reference"]
-       _LOGGER.debug("login user reference is %s",user_reference)
+        user_reference = login_value["subscriptions"][0]["reference"]
+        _LOGGER.debug("login user reference is %s", user_reference)
     except:
-       user_reference = None
-       _LOGGER.error("login user reference not found")
+        user_reference = None
+        _LOGGER.error("login user reference not found")
 
     # Live Data
     live_coordinator = await async_create_live_coordinator(
@@ -170,13 +169,37 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     )
 
     sensors = [
-        AtomeLiveSensor(live_coordinator, live_sensor_name, user_reference, atome_device_name),
-        AtomePeriodSensor(daily_coordinator, daily_sensor_name, user_reference, atome_device_name, DAILY_PERIOD_TYPE),
-        AtomePeriodSensor(weekly_coordinator, weekly_sensor_name, user_reference, atome_device_name, WEEKLY_PERIOD_TYPE),
-        AtomePeriodSensor(
-            monthly_coordinator, monthly_sensor_name, user_reference, atome_device_name, MONTHLY_PERIOD_TYPE
+        AtomeLiveSensor(
+            live_coordinator, live_sensor_name, user_reference, atome_device_name
         ),
-        AtomePeriodSensor(yearly_coordinator, yearly_sensor_name, user_reference, atome_device_name, YEARLY_PERIOD_TYPE),
+        AtomePeriodSensor(
+            daily_coordinator,
+            daily_sensor_name,
+            user_reference,
+            atome_device_name,
+            DAILY_PERIOD_TYPE,
+        ),
+        AtomePeriodSensor(
+            weekly_coordinator,
+            weekly_sensor_name,
+            user_reference,
+            atome_device_name,
+            WEEKLY_PERIOD_TYPE,
+        ),
+        AtomePeriodSensor(
+            monthly_coordinator,
+            monthly_sensor_name,
+            user_reference,
+            atome_device_name,
+            MONTHLY_PERIOD_TYPE,
+        ),
+        AtomePeriodSensor(
+            yearly_coordinator,
+            yearly_sensor_name,
+            user_reference,
+            atome_device_name,
+            YEARLY_PERIOD_TYPE,
+        ),
     ]
 
     async_add_entities(sensors, True)
@@ -292,7 +315,9 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
 class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
     """Basic class to store atome client."""
 
-    def __init__(self, coordinator, name, user_reference, atome_device_name, period_type):
+    def __init__(
+        self, coordinator, name, user_reference, atome_device_name, period_type
+    ):
         """Initialize the data."""
         super().__init__(coordinator)
         self._name = name
@@ -339,7 +364,9 @@ class AtomeLiveSensor(AtomeGenericSensor):
 
     def __init__(self, coordinator, name, user_reference, atome_device_name):
         """Initialize the data."""
-        super().__init__(coordinator, name, user_reference, atome_device_name, LIVE_TYPE)
+        super().__init__(
+            coordinator, name, user_reference, atome_device_name, LIVE_TYPE
+        )
         self._live_data = None
 
         # HA attributes
@@ -370,9 +397,13 @@ class AtomeLiveSensor(AtomeGenericSensor):
 class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
     """Class used to retrieve Period Data."""
 
-    def __init__(self, coordinator, name, user_reference, atome_device_name, period_type):
+    def __init__(
+        self, coordinator, name, user_reference, atome_device_name, period_type
+    ):
         """Initialize the data."""
-        super().__init__(coordinator, name, user_reference, atome_device_name, period_type)
+        super().__init__(
+            coordinator, name, user_reference, atome_device_name, period_type
+        )
         self._period_data = AtomePeriodData()
         self._previous_period_data = AtomePeriodData()
 

@@ -1,13 +1,20 @@
 """Linky Key Atome."""
 import logging
 
-from pykeyatome.client import AtomeClient
+from pykeyatome.client import (
+    AtomeClient,
+    DAILY_PERIOD_TYPE,
+    MONTHLY_PERIOD_TYPE,
+    WEEKLY_PERIOD_TYPE,
+    YEARLY_PERIOD_TYPE,
+)
 import voluptuous as vol
 
 from homeassistant.components.sensor import (
     PLATFORM_SCHEMA,
     STATE_CLASS_MEASUREMENT,
     STATE_CLASS_TOTAL_INCREASING,
+    SensorDeviceClass,
     SensorEntity,
 )
 from homeassistant.const import (
@@ -15,8 +22,6 @@ from homeassistant.const import (
     CONF_NAME,
     CONF_PASSWORD,
     CONF_USERNAME,
-    DEVICE_CLASS_ENERGY,
-    DEVICE_CLASS_POWER,
     ENERGY_KILO_WATT_HOUR,
     POWER_WATT,
     STATE_UNAVAILABLE,
@@ -37,7 +42,6 @@ from .const import (
     ATTR_PERIOD_PRICE,
     DAILY_NAME_SUFFIX,
     DAILY_SCAN_INTERVAL,
-    DAILY_TYPE,
     DEFAULT_NAME,
     DOMAIN,
     LIVE_NAME_SUFFIX,
@@ -45,13 +49,10 @@ from .const import (
     LIVE_TYPE,
     MONTHLY_NAME_SUFFIX,
     MONTHLY_SCAN_INTERVAL,
-    MONTHLY_TYPE,
     WEEKLY_NAME_SUFFIX,
     WEEKLY_SCAN_INTERVAL,
-    WEEKLY_TYPE,
     YEARLY_NAME_SUFFIX,
     YEARLY_SCAN_INTERVAL,
-    YEARLY_TYPE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -125,7 +126,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     yearly_sensor_name = sensor_root_name + YEARLY_NAME_SUFFIX
 
     atome_client = AtomeClient(username, password)
-    if not await hass.async_add_executor_job(atome_client.login):
+    if await hass.async_add_executor_job(atome_client.login) is None:
         _LOGGER.error("No login available for atome server")
         return
 
@@ -136,24 +137,24 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
     # Periodic Data
     daily_coordinator = await async_create_period_coordinator(
-        hass, atome_client, daily_sensor_name, DAILY_TYPE, DAILY_SCAN_INTERVAL
+        hass, atome_client, daily_sensor_name, DAILY_PERIOD_TYPE, DAILY_SCAN_INTERVAL
     )
     weekly_coordinator = await async_create_period_coordinator(
-        hass, atome_client, weekly_sensor_name, WEEKLY_TYPE, WEEKLY_SCAN_INTERVAL
+        hass, atome_client, weekly_sensor_name, WEEKLY_PERIOD_TYPE, WEEKLY_SCAN_INTERVAL
     )
     monthly_coordinator = await async_create_period_coordinator(
-        hass, atome_client, monthly_sensor_name, MONTHLY_TYPE, MONTHLY_SCAN_INTERVAL
+        hass, atome_client, monthly_sensor_name, MONTHLY_PERIOD_TYPE, MONTHLY_SCAN_INTERVAL
     )
     yearly_coordinator = await async_create_period_coordinator(
-        hass, atome_client, yearly_sensor_name, YEARLY_TYPE, YEARLY_SCAN_INTERVAL
+        hass, atome_client, yearly_sensor_name, YEARLY_PERIOD_TYPE, YEARLY_SCAN_INTERVAL
     )
 
     sensors = [
         AtomeLiveSensor(live_coordinator, live_sensor_name),
-        AtomePeriodSensor(daily_coordinator, daily_sensor_name, DAILY_TYPE),
-        AtomePeriodSensor(weekly_coordinator, weekly_sensor_name, WEEKLY_TYPE),
-        AtomePeriodSensor(monthly_coordinator, monthly_sensor_name, MONTHLY_TYPE),
-        AtomePeriodSensor(yearly_coordinator, yearly_sensor_name, YEARLY_TYPE),
+        AtomePeriodSensor(daily_coordinator, daily_sensor_name, DAILY_PERIOD_TYPE),
+        AtomePeriodSensor(weekly_coordinator, weekly_sensor_name, WEEKLY_PERIOD_TYPE),
+        AtomePeriodSensor(monthly_coordinator, monthly_sensor_name, MONTHLY_PERIOD_TYPE),
+        AtomePeriodSensor(yearly_coordinator, yearly_sensor_name, YEARLY_PERIOD_TYPE),
     ]
 
     async_add_entities(sensors, True)
@@ -275,6 +276,8 @@ class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
         self._name = name
         self._period_type = period_type
 
+        self._attr_name = self._name
+
     async def async_added_to_hass(self) -> None:
         """Register callbacks."""
 
@@ -293,11 +296,6 @@ class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
         """Update the entity from the latest data."""
         raise NotImplementedError
 
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return self._name
-
 
 class AtomeLiveSensor(AtomeGenericSensor):
     """Class used to retrieve Live Data."""
@@ -308,7 +306,7 @@ class AtomeLiveSensor(AtomeGenericSensor):
         self._live_data = None
 
         # HA attributes
-        self._attr_device_class = DEVICE_CLASS_POWER
+        self._attr_device_class = SensorDeviceClass.POWER
         self._attr_native_unit_of_measurement = POWER_WATT
         self._attr_state_class = STATE_CLASS_MEASUREMENT
 
@@ -342,7 +340,7 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
         self._previous_period_data = AtomePeriodData()
 
         # HA attributes
-        self._attr_device_class = DEVICE_CLASS_ENERGY
+        self._attr_device_class = SensorDeviceClass.ENERGY
         self._attr_native_unit_of_measurement = ENERGY_KILO_WATT_HOUR
         self._attr_state_class = STATE_CLASS_TOTAL_INCREASING
 

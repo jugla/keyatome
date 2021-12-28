@@ -31,7 +31,3 @@ YEARLY_SCAN_INTERVAL = timedelta(days=1)
 
 # Type to call py key atome
 LIVE_TYPE = "live"
-DAILY_TYPE = "day"
-WEEKLY_TYPE = "week"
-MONTHLY_TYPE = "month"
-YEARLY_TYPE = "year"

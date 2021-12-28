@@ -1,5 +1,7 @@
 """Linky Key Atome."""
 import logging
+
+import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 
 from homeassistant.components.sensor import (
@@ -20,19 +22,17 @@ from homeassistant.const import (
     STATE_UNKNOWN,
 )
 from homeassistant.core import callback
-import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
 )
-
 from pykeyatome.client import (
-    AtomeClient,
     DAILY_PERIOD_TYPE,
     MONTHLY_PERIOD_TYPE,
     WEEKLY_PERIOD_TYPE,
     YEARLY_PERIOD_TYPE,
+    AtomeClient,
 )
 
 from .const import (
@@ -143,7 +143,11 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         hass, atome_client, weekly_sensor_name, WEEKLY_PERIOD_TYPE, WEEKLY_SCAN_INTERVAL
     )
     monthly_coordinator = await async_create_period_coordinator(
-        hass, atome_client, monthly_sensor_name, MONTHLY_PERIOD_TYPE, MONTHLY_SCAN_INTERVAL
+        hass,
+        atome_client,
+        monthly_sensor_name,
+        MONTHLY_PERIOD_TYPE,
+        MONTHLY_SCAN_INTERVAL,
     )
     yearly_coordinator = await async_create_period_coordinator(
         hass, atome_client, yearly_sensor_name, YEARLY_PERIOD_TYPE, YEARLY_SCAN_INTERVAL
@@ -153,7 +157,9 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         AtomeLiveSensor(live_coordinator, live_sensor_name),
         AtomePeriodSensor(daily_coordinator, daily_sensor_name, DAILY_PERIOD_TYPE),
         AtomePeriodSensor(weekly_coordinator, weekly_sensor_name, WEEKLY_PERIOD_TYPE),
-        AtomePeriodSensor(monthly_coordinator, monthly_sensor_name, MONTHLY_PERIOD_TYPE),
+        AtomePeriodSensor(
+            monthly_coordinator, monthly_sensor_name, MONTHLY_PERIOD_TYPE
+        ),
         AtomePeriodSensor(yearly_coordinator, yearly_sensor_name, YEARLY_PERIOD_TYPE),
     ]
 

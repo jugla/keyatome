@@ -35,7 +35,7 @@ repos:
           - flake8-docstrings==1.5.0
           - pydocstyle==5.0.1
         args:
-          - --ignore=E501,W503,F401
+          - --ignore=E501,W503,F401,E722
         files: ^custom_components/.+\.py$
   - repo: https://github.com/pre-commit/mirrors-isort
     rev: v5.9.3

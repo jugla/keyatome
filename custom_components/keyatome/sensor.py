@@ -119,7 +119,7 @@ async def async_create_live_coordinator(hass, atome_client, name):
 
 
 async def create_coordinators_and_sensors(hass, username, password, sensor_root_name):
-    """Create all coordinators and all instanciation for sensor."""
+    """Create all coordinators and all instantiation for sensor."""
     live_sensor_name = sensor_root_name + LIVE_NAME_SUFFIX
     daily_sensor_name = sensor_root_name + DAILY_NAME_SUFFIX
     monthly_sensor_name = sensor_root_name + MONTHLY_NAME_SUFFIX

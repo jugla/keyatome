@@ -436,6 +436,8 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
         )
         self._period_data = AtomePeriodData()
         self._previous_period_data = AtomePeriodData()
+        # last valid period data
+        self._last_valid_period_data = AtomePeriodData()
 
         # HA attributes
         self._attr_device_class = SensorDeviceClass.ENERGY
@@ -477,17 +479,19 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
         """Fetch new state data for this sensor."""
         _LOGGER.debug("Async Update sensor %s", self._name)
         new_period_data = self.coordinator.data
-        if new_period_data.usage and self._period_data.usage:
+        if new_period_data.usage and self._last_valid_period_data.usage:
             _LOGGER.debug(
                 "Check period %s : New %s ; Current %s",
                 self._name,
                 new_period_data.usage,
-                self._period_data.usage,
+                self._last_valid_period_data.usage,
             )
             # Take a margin to avoid storage of previous data
-            if (new_period_data.usage - self._period_data.usage) < (-1.0):
+            if (new_period_data.usage - self._last_valid_period_data.usage) < (-1.0):
                 _LOGGER.debug(
-                    "Previous period %s becomes %s", self._name, self._period_data.usage
+                    "Previous period %s becomes %s", self._name, self._last_valid_period_data.usage
                 )
-                self._previous_period_data = self._period_data
+                self._previous_period_data = self._last_valid_period_data
         self._period_data = new_period_data
+        if new_period_data.usage:
+            self._last_valid_period_data = new_period_data

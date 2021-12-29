@@ -43,6 +43,7 @@ from .const import (
     ATTRIBUTION,
     DAILY_NAME_SUFFIX,
     DAILY_SCAN_INTERVAL,
+    DATA_COORDINATOR,
     DEBUG_FLAG,
     DEFAULT_NAME,
     DEVICE_CONF_URL,
@@ -117,12 +118,7 @@ async def async_create_live_coordinator(hass, atome_client, name):
     return live_coordinator
 
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
-    """Set up the Atome sensor."""
-    username = config[CONF_USERNAME]
-    password = config[CONF_PASSWORD]
-    sensor_root_name = config[CONF_NAME]
-
+async def create_coordinators_and_sensors(hass, username, password, sensor_root_name):
     live_sensor_name = sensor_root_name + LIVE_NAME_SUFFIX
     daily_sensor_name = sensor_root_name + DAILY_NAME_SUFFIX
     monthly_sensor_name = sensor_root_name + MONTHLY_NAME_SUFFIX
@@ -202,7 +198,36 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         ),
     ]
 
+    return sensors
+
+
+async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+    """Set up the Atome sensor."""
+    username = config[CONF_USERNAME]
+    password = config[CONF_PASSWORD]
+    sensor_root_name = config[CONF_NAME]
+
+    sensors = await create_coordinators_and_sensors(hass, username, password, sensor_root_name)
+
     async_add_entities(sensors, True)
+
+
+async def async_setup_entry(hass, config_entry, async_add_entities):
+    """Set up KeyAtome sensors based on a config entry."""
+    coordinator = hass.data[DOMAIN][DATA_COORDINATOR][config_entry.entry_id]
+    unique_id = config_entry.unique_id
+
+    config = config_entry.data
+
+    # Get data from config flow
+    username = config.get(CONF_USERNAME)
+    password = config.get(CONF_PASSWORD)
+    sensor_root_name = config.get(CONF_NAME, DEFAULT_NAME)
+
+    sensors = await create_coordinators_and_sensors(hass, username, password, sensor_root_name)
+
+    async_add_entities(sensors, True)
+
 
 
 class AtomeGenericServerEndPoint:

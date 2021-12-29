@@ -1,0 +1,22 @@
+{
+  "title": "Key Atome",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure KeyAtome",
+        "description": "Define the KeyAtome account",
+        "data": {
+           "username": "the username",
+           "password" : "the password",
+           "name" : "the root sensor name"
+        }
+      }
+    },
+    "error": {
+      "general_error": "unknown error"
+    },
+    "abort": {
+      "already_configured": "Already configured"
+    }
+  }
+}

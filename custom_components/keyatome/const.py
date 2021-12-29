@@ -7,6 +7,9 @@ DEBUG_FLAG = False
 # Domain name
 DOMAIN = "keyatome"
 
+# Config flow
+DATA_COORDINATOR = "coordinator"
+
 # Sensor default name
 DEFAULT_NAME = "Atome"
 

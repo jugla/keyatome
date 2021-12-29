@@ -1,11 +1,7 @@
 """Support for Atome devices connected to a Linky Energy Meter."""
 import asyncio
 
-from .const import (
-    DOMAIN,
-    DATA_COORDINATOR,
-)
-
+from .const import DATA_COORDINATOR, DOMAIN
 
 PLATFORMS = ["sensor"]
 

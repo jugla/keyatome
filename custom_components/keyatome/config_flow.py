@@ -3,19 +3,12 @@
 # HA library
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import (
-    CONF_USERNAME,
-    CONF_PASSWORD,
-    CONF_NAME,
-)
+from homeassistant.const import CONF_NAME, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
 
 # component library
-from .const import (
-    DEFAULT_NAME,
-    DOMAIN,
-)
+from .const import DEFAULT_NAME, DOMAIN
 
 KEY_ATOME_DATA_SCHEMA = vol.Schema(
     {

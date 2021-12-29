@@ -489,7 +489,9 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
             # Take a margin to avoid storage of previous data
             if (new_period_data.usage - self._last_valid_period_data.usage) < (-1.0):
                 _LOGGER.debug(
-                    "Previous period %s becomes %s", self._name, self._last_valid_period_data.usage
+                    "Previous period %s becomes %s",
+                    self._name,
+                    self._last_valid_period_data.usage,
                 )
                 self._previous_period_data = self._last_valid_period_data
         self._period_data = new_period_data

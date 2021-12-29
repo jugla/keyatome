@@ -22,7 +22,11 @@ folder where your `configuration.yaml` file is, create it and place the director
 </details>
 
 ## Using the component
-in configuration.yaml, declare :
+**Use UI**
+
+or
+
+*deprecated method* in configuration.yaml, declare :
 
 *Example of YAML*
   

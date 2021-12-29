@@ -1,4 +1,6 @@
 """Support for Atome devices connected to a Linky Energy Meter."""
+import asyncio
+
 from .const import (
     DOMAIN,
     DATA_COORDINATOR,
@@ -9,10 +11,12 @@ PLATFORMS = ["sensor"]
 
 DATA_LISTENER = "listener"
 
+
 async def async_setup(hass, config):
     """Set up the World Tide Custom component."""
     # hass.data[DOMAIN] = {DATA_COORDINATOR: {}, DATA_LISTENER: {}}
     return True
+
 
 async def async_setup_entry(hass, config_entry):
     """Set up WorldTidesInfo as config entry."""
@@ -35,6 +39,7 @@ async def async_setup_entry(hass, config_entry):
         )
 
     return True
+
 
 async def async_unload_entry(hass, config_entry):
     """Unload an WorldTidesInfo config entry."""

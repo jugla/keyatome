@@ -25,6 +25,7 @@ KEY_ATOME_DATA_SCHEMA = vol.Schema(
     }
 )
 
+
 @config_entries.HANDLERS.register(DOMAIN)
 class KeyAtomeFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle an WorldTidesInfoCustom config flow."""

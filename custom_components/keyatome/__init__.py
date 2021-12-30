@@ -18,7 +18,7 @@ async def async_setup_entry(hass, config_entry):
     """Set up WorldTidesInfo as config entry."""
     hass.data.setdefault(DOMAIN, {DATA_COORDINATOR: {}, DATA_LISTENER: {}})
 
-    # just to initialize (this code will be replace if coordinator are not initialize in sensor)
+    # just to initialize (if data has to be forward to plateform)
     coordinator = None
 
     # To manage options

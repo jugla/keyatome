@@ -460,6 +460,8 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
             self._previous_period_data.price = format_receive_value(
                 state_recorded.attributes.get(ATTR_PREVIOUS_PERIOD_PRICE)
             )
+            if self._period_data.usage:
+                self._last_valid_period_data = self._period_data
         await super().async_added_to_hass()
 
     @property

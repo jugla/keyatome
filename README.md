@@ -8,8 +8,8 @@ Either use HACS (default), either manual
 ### [HACS](https://hacs.xyz/) (Home Assistant Community Store) [under request]
 1. Go to HACS page on your Home Assistant instance 
 1. Select `integration` 
-1. Press add icon and search for `worldtidesinfocustom` 
-1. Select worldtidesinfocustom and install 
+1. Press add icon and search for `keyatome` 
+1. Select keyatome and install 
 
 ### Manual
 <details><summary>Manual Procedure</summary>

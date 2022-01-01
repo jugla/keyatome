@@ -41,3 +41,6 @@ YEARLY_SCAN_INTERVAL = timedelta(days=1)
 
 # Type to call py key atome
 LIVE_TYPE = "live"
+
+# Round price
+ROUND_PRICE = 2

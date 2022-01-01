@@ -54,6 +54,7 @@ from .const import (
     LIVE_TYPE,
     MONTHLY_NAME_SUFFIX,
     MONTHLY_SCAN_INTERVAL,
+    ROUND_PRICE,
     WEEKLY_NAME_SUFFIX,
     WEEKLY_SCAN_INTERVAL,
     YEARLY_NAME_SUFFIX,
@@ -319,7 +320,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         values = self._atome_client.get_consumption(self._period_type)
         if values is not None and values.get("total") and values.get("price"):
             self._period_data.usage = values["total"] / 1000
-            self._period_data.price = values["price"]
+            self._period_data.price = round(values["price"], ROUND_PRICE)
             _LOGGER.debug(
                 "Updating Atome %s data. Got: %d",
                 self._period_type,

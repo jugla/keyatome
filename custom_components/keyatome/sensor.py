@@ -264,7 +264,7 @@ class AtomeLiveServerEndPoint(AtomeGenericServerEndPoint):
         super().__init__(atome_client, name, LIVE_TYPE)
         self._live_data = AtomeLiveData()
 
-    def _retrieve_live(self):
+    def _retrieve_live(self, retry_flag = False):
         """Retrieve Live data."""
         values = self._atome_client.get_live()
         if (
@@ -283,18 +283,20 @@ class AtomeLiveServerEndPoint(AtomeGenericServerEndPoint):
                 self._live_data.subscribed_power,
             )
             return True
-
-        _LOGGER.error("Live Data : Missing last value in values: %s", values)
+        if retry_flag:
+            _LOGGER.error("Live Data : Missing last value in values: %s", values)
+        else:
+            _LOGGER.warning("Live Data : Missing last value in values: %s", values)
         return False
 
     def retrieve_data(self):
         """Return current power value."""
         _LOGGER.debug("Live Data : Update Usage")
         self._live_data = AtomeLiveData()
-        if not self._retrieve_live():
+        if not self._retrieve_live(False):
             _LOGGER.debug("Perform Reconnect during live request")
             self._atome_client.login()
-            self._retrieve_live()
+            self._retrieve_live(True)
         return self._live_data
 
 
@@ -315,7 +317,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         super().__init__(atome_client, name, period_type)
         self._period_data = AtomePeriodData()
 
-    def _retrieve_period_usage(self):
+    def _retrieve_period_usage(self, retry_flag = False):
         """Return current daily/weekly/monthly/yearly power usage."""
         values = self._atome_client.get_consumption(self._period_type)
         if values is not None and values.get("total") and values.get("price"):
@@ -328,18 +330,23 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
             )
             return True
 
-        _LOGGER.error(
-            "%s : Missing last value in values: %s", self._period_type, values
-        )
+        if retry_flag:
+            _LOGGER.error(
+                "%s : Missing total value in values: %s", self._period_type, values
+            )
+        else:
+            _LOGGER.warning(
+                "%s : Missing total value in values: %s", self._period_type, values
+            )
         return False
 
     def retrieve_data(self):
         """Return current daily/weekly/monthly/yearly power usage with one retry."""
         self._period_data = AtomePeriodData()
-        if not self._retrieve_period_usage():
+        if not self._retrieve_period_usage(False):
             _LOGGER.debug("Perform Reconnect during %s", self._period_type)
             self._atome_client.login()
-            self._retrieve_period_usage()
+            self._retrieve_period_usage(True)
         return self._period_data
 
 

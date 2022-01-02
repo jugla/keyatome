@@ -264,7 +264,7 @@ class AtomeLiveServerEndPoint(AtomeGenericServerEndPoint):
         super().__init__(atome_client, name, LIVE_TYPE)
         self._live_data = AtomeLiveData()
 
-    def _retrieve_live(self, retry_flag = False):
+    def _retrieve_live(self, retry_flag):
         """Retrieve Live data."""
         values = self._atome_client.get_live()
         if (
@@ -317,7 +317,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         super().__init__(atome_client, name, period_type)
         self._period_data = AtomePeriodData()
 
-    def _retrieve_period_usage(self, retry_flag = False):
+    def _retrieve_period_usage(self, retry_flag):
         """Return current daily/weekly/monthly/yearly power usage."""
         values = self._atome_client.get_consumption(self._period_type)
         if values is not None and values.get("total") and values.get("price"):

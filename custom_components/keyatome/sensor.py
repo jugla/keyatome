@@ -386,7 +386,7 @@ class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def device_info(self):
-        """Device info for WorldTideInfo Server."""
+        """Device info for KeyAtome Server."""
         return DeviceInfo(
             identifiers={(DOMAIN, self._user_reference)},
             manufacturer="AtomeLinkyTotalEnergies",

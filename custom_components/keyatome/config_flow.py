@@ -1,4 +1,4 @@
-"""Define a config flow manager for WorldTidesInfoCustom."""
+"""Define a config flow manager for KeyAtome."""
 
 # HA library
 import voluptuous as vol
@@ -21,7 +21,7 @@ KEY_ATOME_DATA_SCHEMA = vol.Schema(
 
 @config_entries.HANDLERS.register(DOMAIN)
 class KeyAtomeFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle an WorldTidesInfoCustom config flow."""
+    """Handle a KeyAtome config flow."""
 
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL

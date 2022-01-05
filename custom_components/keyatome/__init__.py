@@ -9,13 +9,13 @@ DATA_LISTENER = "listener"
 
 
 async def async_setup(hass, config):
-    """Set up the World Tide Custom component."""
+    """Set up the KeyAtome component."""
     # hass.data[DOMAIN] = {DATA_COORDINATOR: {}, DATA_LISTENER: {}}
     return True
 
 
 async def async_setup_entry(hass, config_entry):
-    """Set up WorldTidesInfo as config entry."""
+    """Set up KeyAtome as config entry."""
     hass.data.setdefault(DOMAIN, {DATA_COORDINATOR: {}, DATA_LISTENER: {}})
 
     # just to initialize (if data has to be forward to plateform)
@@ -38,7 +38,7 @@ async def async_setup_entry(hass, config_entry):
 
 
 async def async_unload_entry(hass, config_entry):
-    """Unload an WorldTidesInfo config entry."""
+    """Unload a KeyAtome config entry."""
     unload_ok = all(
         await asyncio.gather(
             *[

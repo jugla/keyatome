@@ -13,7 +13,8 @@
       }
     },
     "error": {
-      "general_error": "unknown error"
+      "general_error": "unknown error",
+      "invalid_credentials": "invalid credentials"
     },
     "abort": {
       "already_configured": "Already configured"

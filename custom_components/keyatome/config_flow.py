@@ -36,7 +36,7 @@ class KeyAtomeFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         atome_client = AtomeClient(username, password)
         login_value = await self.hass.async_add_executor_job(atome_client.login)
         if login_value is None:
-           _LOGGER.error("KeyAtome Config Flow : No login available for atome server")
+            _LOGGER.error("KeyAtome Config Flow : No login available for atome server")
         return login_value
 
     async def async_step_user(self, user_input=None):
@@ -50,7 +50,9 @@ class KeyAtomeFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(config_id)
         self._abort_if_unique_id_configured()
 
-        login_result = await self._perform_login(user_input[CONF_USERNAME], user_input[CONF_PASSWORD])
+        login_result = await self._perform_login(
+            user_input[CONF_USERNAME], user_input[CONF_PASSWORD]
+        )
 
         if login_result is None:
             return self.async_show_form(

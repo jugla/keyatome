@@ -8,11 +8,11 @@ from homeassistant.const import CONF_NAME, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import callback
 from homeassistant.helpers import config_validation as cv
 
-# component library
-from .const import DEFAULT_NAME, DOMAIN
-
 # from pykeyatome
 from pykeyatome.client import AtomeClient
+
+# component library
+from .const import DEFAULT_NAME, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -269,8 +269,8 @@ class AtomeLiveServerEndPoint(AtomeGenericServerEndPoint):
         values = self._atome_client.get_live()
         if (
             values is not None
-            and values.get("last")
-            and values.get("subscribed")
+            and (values.get("last") is not None)
+            and (values.get("subscribed") is not None)
             and (values.get("isConnected") is not None)
         ):
             self._live_data.live_power = values["last"]
@@ -320,7 +320,11 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
     def _retrieve_period_usage(self, retry_flag):
         """Return current daily/weekly/monthly/yearly power usage."""
         values = self._atome_client.get_consumption(self._period_type)
-        if values is not None and values.get("total") and values.get("price"):
+        if (
+            (values is not None)
+            and (values.get("total") is not None)
+            and (values.get("price") is not None)
+        ):
             self._period_data.usage = values["total"] / 1000
             self._period_data.price = round(values["price"], ROUND_PRICE)
             _LOGGER.debug(

@@ -6,7 +6,7 @@ Home Assistant component to handle key atom, a Linky-compatible device made by T
 
 ## Installation
 Either use HACS (default), either manual
-### [HACS](https://hacs.xyz/) (Home Assistant Community Store) [under request]
+### [HACS](https://hacs.xyz/) (Home Assistant Community Store) [hacs release is beeing build]
 1. Go to HACS page on your Home Assistant instance 
 1. Select `integration` 
 1. Press add icon and search for `keyatome` 

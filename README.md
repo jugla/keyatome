@@ -2,7 +2,7 @@
 ![GitHub release](https://img.shields.io/github/release/jugla/KeyAtome)
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 
-Home Assistant component to handle key atom, a Linky-compatible device made by Total/Direct-Energie.
+Home Assistant component to handle key atome, a Linky-compatible device made by Total/Direct-Energie.
 
 ## Installation
 Either use HACS (default), either manual

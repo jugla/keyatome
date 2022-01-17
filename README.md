@@ -4,6 +4,12 @@
 
 Home Assistant component to handle key atome, a Linky-compatible device made by Total/Direct-Energie.
 
+Hereafter an example of history curve
+<p align="center">
+  <img src="./doc/picture/AtomeLivePower.JPG" alt="Size Limit CLI" width="500">
+</p>
+
+
 ## Installation
 Either use HACS (default), either manual
 ### [HACS](https://hacs.xyz/) (Home Assistant Community Store) 

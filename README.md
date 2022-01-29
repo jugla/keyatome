@@ -3,6 +3,7 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 
 Home Assistant component to handle key atome, a Linky-compatible device made by Total/Direct-Energie.
+Several key atome linky within an account can be managed.
 
 Hereafter an example of history curve
 <p align="center">
@@ -48,7 +49,9 @@ sensor:
 ```
 where :
 - atome_linky_number is optional (default is 1) and represents your linky within the account (1, 2, 3 ...) 
-- name is optional (default value is Atome)
+- name is optional (default value is Atome) and represents root name for sensor :
+  - sensor.atome_... when atome_linky_number is one
+  - sensor.atome_linky(number)_ when atome_linky_number is greater
 
 **Check that *atome* of HomeAssistant is not activated (i.e. declared in configuration.yaml) to avoid too many request on Atome Server**
 

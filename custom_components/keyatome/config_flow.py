@@ -53,22 +53,25 @@ class KeyAtomeFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_show_form(
                 step_id="user", data_schema=KEY_ATOME_DATA_SCHEMA
             )
+        # Set username / password / atome_linky_number
+        username = user_input[CONF_USERNAME]
+        password = user_input[CONF_PASSWORD]
+        atome_linky_number = user_input.get(
+            CONF_ATOME_LINKY_NUMBER, DEFAULT_ATOME_LINKY_NUMBER
+        )
 
-        if user_input.get(CONF_ATOME_LINKY_NUMBER, DEFAULT_ATOME_LINKY_NUMBER) == 1:
-            config_id = str(user_input[CONF_USERNAME])
+        # compunte unique id
+        if atome_linky_number == 1:
+            config_id = str(username)
         else:
-            config_id = (
-                str(user_input[CONF_USERNAME])
-                + "_linky_"
-                + str(user_input.get(CONF_ATOME_LINKY_NUMBER, DEFAULT_ATOME_LINKY_NUMBER))
-            )
+            config_id = str(username) + "_linky_" + str(atome_linky_number)
+
         await self.async_set_unique_id(config_id)
         self._abort_if_unique_id_configured()
 
+        # check if login is ok
         login_result = await self._perform_login(
-            user_input[CONF_USERNAME],
-            user_input[CONF_PASSWORD],
-            user_input.get(CONF_ATOME_LINKY_NUMBER, DEFAULT_ATOME_LINKY_NUMBER),
+            username, password, atome_linky_number
         )
 
         if login_result is None:

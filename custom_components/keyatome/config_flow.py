@@ -12,7 +12,12 @@ from homeassistant.helpers import config_validation as cv
 from pykeyatome.client import AtomeClient
 
 # component library
-from .const import CONF_ATOME_LINKY_NUMBER, DEFAULT_ATOME_LINKY_NUMBER, DEFAULT_NAME, DOMAIN
+from .const import (
+    CONF_ATOME_LINKY_NUMBER,
+    DEFAULT_ATOME_LINKY_NUMBER,
+    DEFAULT_NAME,
+    DOMAIN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,7 +25,9 @@ KEY_ATOME_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_USERNAME): cv.string,
         vol.Required(CONF_PASSWORD): cv.string,
-        vol.Optional(CONF_ATOME_LINKY_NUMBER, default=DEFAULT_ATOME_LINKY_NUMBER): cv.positive_int,
+        vol.Optional(
+            CONF_ATOME_LINKY_NUMBER, default=DEFAULT_ATOME_LINKY_NUMBER
+        ): cv.positive_int,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     }
 )

@@ -69,7 +69,9 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_USERNAME): cv.string,
         vol.Required(CONF_PASSWORD): cv.string,
-        vol.Optional(CONF_ATOME_LINKY_NUMBER, default=DEFAULT_ATOME_LINKY_NUMBER): cv.positive_int,
+        vol.Optional(
+            CONF_ATOME_LINKY_NUMBER, default=DEFAULT_ATOME_LINKY_NUMBER
+        ): cv.positive_int,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     }
 )
@@ -122,7 +124,9 @@ async def async_create_live_coordinator(hass, atome_client, name):
     return live_coordinator
 
 
-async def create_coordinators_and_sensors(hass, username, password, atome_linky_number, sensor_root_name):
+async def create_coordinators_and_sensors(
+    hass, username, password, atome_linky_number, sensor_root_name
+):
     """Create all coordinators and all instantiation for sensor."""
     live_sensor_name = sensor_root_name + LIVE_NAME_SUFFIX
     daily_sensor_name = sensor_root_name + DAILY_NAME_SUFFIX

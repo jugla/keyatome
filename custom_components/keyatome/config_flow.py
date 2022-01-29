@@ -55,12 +55,12 @@ class KeyAtomeFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
         if user_input.get(CONF_ATOME_LINKY_NUMBER, DEFAULT_ATOME_LINKY_NUMBER) == 1:
-            config_id = user_input[CONF_USERNAME]
+            config_id = str(user_input[CONF_USERNAME])
         else:
             config_id = (
-                user_input[CONF_USERNAME]
+                str(user_input[CONF_USERNAME])
                 + "_linky_"
-                + user_input.get(CONF_ATOME_LINKY_NUMBER, DEFAULT_ATOME_LINKY_NUMBER)
+                + str(user_input.get(CONF_ATOME_LINKY_NUMBER, DEFAULT_ATOME_LINKY_NUMBER))
             )
         await self.async_set_unique_id(config_id)
         self._abort_if_unique_id_configured()

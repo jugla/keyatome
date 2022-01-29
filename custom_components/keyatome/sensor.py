@@ -128,13 +128,20 @@ async def create_coordinators_and_sensors(
     hass, username, password, atome_linky_number, sensor_root_name
 ):
     """Create all coordinators and all instantiation for sensor."""
-    live_sensor_name = sensor_root_name + LIVE_NAME_SUFFIX
-    daily_sensor_name = sensor_root_name + DAILY_NAME_SUFFIX
-    monthly_sensor_name = sensor_root_name + MONTHLY_NAME_SUFFIX
-    weekly_sensor_name = sensor_root_name + WEEKLY_NAME_SUFFIX
-    yearly_sensor_name = sensor_root_name + YEARLY_NAME_SUFFIX
+    if atome_linky_number == 1:
+       sensor_root_name_linky = sensor_root_name
+    else:
+       sensor_root_name_linky = (
+           sensor_root_name + "_linky" + str(atome_linky_number) + "_"
+       )
+    # Create name for sensor
+    live_sensor_name = sensor_root_name_linky + LIVE_NAME_SUFFIX
+    daily_sensor_name = sensor_root_name_linky + DAILY_NAME_SUFFIX
+    monthly_sensor_name = sensor_root_name_linky + MONTHLY_NAME_SUFFIX
+    weekly_sensor_name = sensor_root_name_linky + WEEKLY_NAME_SUFFIX
+    yearly_sensor_name = sensor_root_name_linky + YEARLY_NAME_SUFFIX
 
-    atome_device_name = sensor_root_name + DEVICE_NAME_SUFFIX
+    atome_device_name = sensor_root_name_linky + DEVICE_NAME_SUFFIX
 
     atome_client = AtomeClient(username, password, atome_linky_number)
     login_value = await hass.async_add_executor_job(atome_client.login)

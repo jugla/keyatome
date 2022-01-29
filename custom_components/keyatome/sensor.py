@@ -41,10 +41,12 @@ from .const import (
     ATTR_PREVIOUS_PERIOD_PRICE,
     ATTR_PREVIOUS_PERIOD_USAGE,
     ATTRIBUTION,
+    CONF_ATOME_LINKY_NUMBER,
     DAILY_NAME_SUFFIX,
     DAILY_SCAN_INTERVAL,
     DATA_COORDINATOR,
     DEBUG_FLAG,
+    DEFAULT_ATOME_LINKY_NUMBER,
     DEFAULT_NAME,
     DEVICE_CONF_URL,
     DEVICE_NAME_SUFFIX,
@@ -67,6 +69,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_USERNAME): cv.string,
         vol.Required(CONF_PASSWORD): cv.string,
+        vol.Optional(CONF_ATOME_LINKY_NUMBER, default=DEFAULT_ATOME_LINKY_NUMBER): cv.positive_int,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     }
 )
@@ -119,7 +122,7 @@ async def async_create_live_coordinator(hass, atome_client, name):
     return live_coordinator
 
 
-async def create_coordinators_and_sensors(hass, username, password, sensor_root_name):
+async def create_coordinators_and_sensors(hass, username, password, atome_linky_number, sensor_root_name):
     """Create all coordinators and all instantiation for sensor."""
     live_sensor_name = sensor_root_name + LIVE_NAME_SUFFIX
     daily_sensor_name = sensor_root_name + DAILY_NAME_SUFFIX
@@ -129,19 +132,15 @@ async def create_coordinators_and_sensors(hass, username, password, sensor_root_
 
     atome_device_name = sensor_root_name + DEVICE_NAME_SUFFIX
 
-    atome_client = AtomeClient(username, password)
+    atome_client = AtomeClient(username, password, atome_linky_number)
     login_value = await hass.async_add_executor_job(atome_client.login)
     if login_value is None:
         _LOGGER.error("No login available for atome server")
         return
     if DEBUG_FLAG:
         _LOGGER.debug("login value is %s", login_value)
-    try:
-        user_reference = login_value["subscriptions"][0]["reference"]
-        _LOGGER.debug("login user reference is %s", user_reference)
-    except:
-        user_reference = None
-        _LOGGER.error("login user reference not found")
+    user_reference = atome_client.get_user_reference()
+    _LOGGER.debug("login user reference is %s", user_reference)
 
     # Live Data
     live_coordinator = await async_create_live_coordinator(
@@ -207,10 +206,11 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     """Set up the Atome sensor."""
     username = config[CONF_USERNAME]
     password = config[CONF_PASSWORD]
+    atome_linky_number = config[CONF_ATOME_LINKY_NUMBER]
     sensor_root_name = config[CONF_NAME]
 
     sensors = await create_coordinators_and_sensors(
-        hass, username, password, sensor_root_name
+        hass, username, password, atome_linky_number, sensor_root_name
     )
 
     async_add_entities(sensors, True)
@@ -227,10 +227,11 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     # Get data from config flow
     username = config.get(CONF_USERNAME)
     password = config.get(CONF_PASSWORD)
+    atome_linky_number = config.get(CONF_ATOME_LINKY_NUMBER, DEFAULT_ATOME_LINKY_NUMBER)
     sensor_root_name = config.get(CONF_NAME, DEFAULT_NAME)
 
     sensors = await create_coordinators_and_sensors(
-        hass, username, password, sensor_root_name
+        hass, username, password, atome_linky_number, sensor_root_name
     )
 
     async_add_entities(sensors, True)
@@ -422,6 +423,7 @@ class AtomeLiveSensor(AtomeGenericSensor):
         attr = {ATTR_ATTRIBUTION: ATTRIBUTION}
         attr["subscribed_power"] = self._live_data.subscribed_power
         attr["is_connected"] = self._live_data.is_connected
+        attr["user_reference"] = self._user_reference
         return attr
 
     @property

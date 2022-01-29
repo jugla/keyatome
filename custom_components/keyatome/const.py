@@ -7,6 +7,10 @@ DEBUG_FLAG = False
 # Domain name
 DOMAIN = "keyatome"
 
+# Conf atome_linky_number
+CONF_ATOME_LINKY_NUMBER = "atome_linky_number"
+DEFAULT_ATOME_LINKY_NUMBER = 1
+
 # Config flow
 DATA_COORDINATOR = "coordinator"
 

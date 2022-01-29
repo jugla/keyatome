@@ -8,6 +8,7 @@
         "data": {
            "username": "the username",
            "password" : "the password",
+           "atome_linky_number" : "your atome key number 1, 2, 3 or ...",
            "name" : "the root sensor name"
         }
       }

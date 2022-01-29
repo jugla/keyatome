@@ -12,7 +12,7 @@ from homeassistant.helpers import config_validation as cv
 from pykeyatome.client import AtomeClient
 
 # component library
-from .const import DEFAULT_NAME, DOMAIN
+from .const import CONF_ATOME_LINKY_NUMBER, DEFAULT_ATOME_LINKY_NUMBER, DEFAULT_NAME, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,6 +20,7 @@ KEY_ATOME_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_USERNAME): cv.string,
         vol.Required(CONF_PASSWORD): cv.string,
+        vol.Optional(CONF_ATOME_LINKY_NUMBER, default=DEFAULT_ATOME_LINKY_NUMBER): cv.positive_int,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
     }
 )
@@ -32,8 +33,8 @@ class KeyAtomeFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
-    async def _perform_login(self, username, password):
-        atome_client = AtomeClient(username, password)
+    async def _perform_login(self, username, password, atome_linky_number):
+        atome_client = AtomeClient(username, password, atome_linky_number)
         login_value = await self.hass.async_add_executor_job(atome_client.login)
         if login_value is None:
             _LOGGER.error("KeyAtome Config Flow : No login available for atome server")
@@ -46,12 +47,21 @@ class KeyAtomeFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 step_id="user", data_schema=KEY_ATOME_DATA_SCHEMA
             )
 
-        config_id = user_input[CONF_USERNAME]
+        if user_input.get(CONF_ATOME_LINKY_NUMBER, DEFAULT_ATOME_LINKY_NUMBER) == 1:
+            config_id = user_input[CONF_USERNAME]
+        else:
+            config_id = (
+                user_input[CONF_USERNAME]
+                + "_linky_"
+                + user_input.get(CONF_ATOME_LINKY_NUMBER, DEFAULT_ATOME_LINKY_NUMBER)
+            )
         await self.async_set_unique_id(config_id)
         self._abort_if_unique_id_configured()
 
         login_result = await self._perform_login(
-            user_input[CONF_USERNAME], user_input[CONF_PASSWORD]
+            user_input[CONF_USERNAME],
+            user_input[CONF_PASSWORD],
+            user_input.get(CONF_ATOME_LINKY_NUMBER, DEFAULT_ATOME_LINKY_NUMBER),
         )
 
         if login_result is None:

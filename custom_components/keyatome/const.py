@@ -7,12 +7,12 @@ DEBUG_FLAG = False
 # Domain name
 DOMAIN = "keyatome"
 
+# Config flow
+DATA_COORDINATOR = "coordinator"
+
 # Conf atome_linky_number
 CONF_ATOME_LINKY_NUMBER = "atome_linky_number"
 DEFAULT_ATOME_LINKY_NUMBER = 1
-
-# Config flow
-DATA_COORDINATOR = "coordinator"
 
 # Sensor default name
 DEFAULT_NAME = "Atome"

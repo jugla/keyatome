@@ -129,11 +129,11 @@ async def create_coordinators_and_sensors(
 ):
     """Create all coordinators and all instantiation for sensor."""
     if atome_linky_number == 1:
-       sensor_root_name_linky = sensor_root_name
+        sensor_root_name_linky = sensor_root_name
     else:
-       sensor_root_name_linky = (
-           sensor_root_name + "_linky" + str(atome_linky_number) + "_"
-       )
+        sensor_root_name_linky = (
+            sensor_root_name + "_linky" + str(atome_linky_number) + "_"
+        )
     # Create name for sensor
     live_sensor_name = sensor_root_name_linky + LIVE_NAME_SUFFIX
     daily_sensor_name = sensor_root_name_linky + DAILY_NAME_SUFFIX

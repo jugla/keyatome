@@ -70,9 +70,7 @@ class KeyAtomeFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         self._abort_if_unique_id_configured()
 
         # check if login is ok
-        login_result = await self._perform_login(
-            username, password, atome_linky_number
-        )
+        login_result = await self._perform_login(username, password, atome_linky_number)
 
         if login_result is None:
             return self.async_show_form(

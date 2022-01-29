@@ -43,9 +43,12 @@ sensor:
   - platform: keyatome
     username: YOUR_ATOME_USERNAME
     password: YOUR_ATOME_PASSWORD
+#    atome_linky_number : 1
 #    name: Atome
 ```
-where name is optional (default value is Atome)
+where :
+- atome_linky_number is optional (default is 1) and represents your linky within the account (1, 2, 3 ...) 
+- name is optional (default value is Atome)
 
 **Check that *atome* of HomeAssistant is not activated (i.e. declared in configuration.yaml) to avoid too many request on Atome Server**
 

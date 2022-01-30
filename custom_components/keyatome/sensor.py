@@ -217,8 +217,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     """Set up the Atome sensor."""
     username = config[CONF_USERNAME]
     password = config[CONF_PASSWORD]
-    atome_linky_number = config[CONF_ATOME_LINKY_NUMBER]
-    sensor_root_name = config[CONF_NAME]
+    atome_linky_number = config.get(CONF_ATOME_LINKY_NUMBER, DEFAULT_ATOME_LINKY_NUMBER)
+    sensor_root_name = config.get(CONF_NAME, DEFAULT_NAME)
 
     sensors = await create_coordinators_and_sensors(
         hass, username, password, atome_linky_number, sensor_root_name

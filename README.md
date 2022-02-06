@@ -63,7 +63,7 @@ Several sensors are created (assumed that name given at configuration is atome w
 - sensor.atome_yearly with current yearly consumption (in attributes current price, previous consumption, previous price)
 - sensor.atome_login_stat with current user id, user ref
 
-(Please check the *sensor.atome_login_stat* to check is you have adress the right linky in your user account)
+(Please check the *sensor.atome_login_stat* to check is you have addressed the right linky in your user account)
 
 ## Breaking changes
 <details><summary>detail description</summary>

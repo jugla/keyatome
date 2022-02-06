@@ -5,10 +5,9 @@ import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.components.sensor import (
     PLATFORM_SCHEMA,
-    STATE_CLASS_MEASUREMENT,
-    STATE_CLASS_TOTAL_INCREASING,
     SensorDeviceClass,
     SensorEntity,
+    SensorStateClass,
 )
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
@@ -22,7 +21,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceEntryType
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity import DeviceInfo, EntityCategory
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -54,6 +53,9 @@ from .const import (
     LIVE_NAME_SUFFIX,
     LIVE_SCAN_INTERVAL,
     LIVE_TYPE,
+    LOGIN_STAT_NAME_SUFFIX,
+    LOGIN_STAT_SCAN_INTERVAL,
+    LOGIN_STAT_TYPE,
     MONTHLY_NAME_SUFFIX,
     MONTHLY_SCAN_INTERVAL,
     ROUND_PRICE,
@@ -124,6 +126,25 @@ async def async_create_live_coordinator(hass, atome_client, name):
     return live_coordinator
 
 
+async def async_create_login_stat_coordinator(hass, atome_client, name, atome_linky_number):
+    """Create coordinator for live data."""
+    atome_login_stat_end_point = AtomeLoginStatServerEndPoint(atome_client, name, atome_linky_number)
+
+    async def async_login_stat_update_data():
+        data = await hass.async_add_executor_job(atome_login_stat_end_point.retrieve_data)
+        return data
+
+    login_stat_coordinator = DataUpdateCoordinator(
+        hass,
+        _LOGGER,
+        name=DOMAIN,
+        update_method=async_login_stat_update_data,
+        update_interval=LOGIN_STAT_SCAN_INTERVAL,
+    )
+    await login_stat_coordinator.async_refresh()
+    return login_stat_coordinator
+
+
 async def create_coordinators_and_sensors(
     hass, username, password, atome_linky_number, sensor_root_name
 ):
@@ -135,6 +156,7 @@ async def create_coordinators_and_sensors(
             sensor_root_name + "_linky" + str(atome_linky_number) + "_"
         )
     # Create name for sensor
+    login_stat_sensor_name = sensor_root_name_linky + LOGIN_STAT_NAME_SUFFIX
     live_sensor_name = sensor_root_name_linky + LIVE_NAME_SUFFIX
     daily_sensor_name = sensor_root_name_linky + DAILY_NAME_SUFFIX
     monthly_sensor_name = sensor_root_name_linky + MONTHLY_NAME_SUFFIX
@@ -152,6 +174,11 @@ async def create_coordinators_and_sensors(
         _LOGGER.debug("login value is %s", login_value)
     user_reference = atome_client.get_user_reference()
     _LOGGER.debug("login user reference is %s", user_reference)
+
+    # Login Data
+    login_stat_coordinator = await async_create_login_stat_coordinator(
+        hass, atome_client, login_stat_sensor_name, atome_linky_number
+    )
 
     # Live Data
     live_coordinator = await async_create_live_coordinator(
@@ -177,6 +204,9 @@ async def create_coordinators_and_sensors(
     )
 
     sensors = [
+        AtomeLoginStatSensor(
+            login_stat_coordinator, login_stat_sensor_name, user_reference, atome_device_name, atome_linky_number
+        ),
         AtomeLiveSensor(
             live_coordinator, live_sensor_name, user_reference, atome_device_name
         ),
@@ -256,6 +286,51 @@ class AtomeGenericServerEndPoint:
         self._atome_client = atome_client
         self._name = name
         self._period_type = period_type
+
+
+class AtomeLoginStatData:
+    """Class used to store Login Stat Data."""
+
+    def __init__(self):
+        """Initialize the data."""
+        self.user_id = None
+        self.user_ref = None
+
+
+class AtomeLoginStatServerEndPoint(AtomeGenericServerEndPoint):
+    """Class used to retrieve Login Stat Data."""
+
+    def __init__(self, atome_client, name, atome_linky_number):
+        """Initialize the data."""
+        super().__init__(atome_client, name, LOGIN_STAT_TYPE)
+        self._login_stat_data = AtomeLoginStatData()
+        self._atome_linky_number = atome_linky_number
+
+    def _retrieve_login_stat(self):
+        """Retrieve Live data."""
+        values = self._atome_client.login()
+        error_flag = False
+        try:
+            self._login_stat_data.user_id = str(values["id"])
+            self._login_stat_data.user_ref = values["subscriptions"][(self._atome_linky_number-1)][
+                "reference"
+            ]
+            _LOGGER.debug(
+                "Updating Atome live data. Got: %d, isConnected: %s, subscribed: %d",
+                self._login_stat_data.user_id,
+                self._login_stat_data.user_ref,
+            )
+        except:
+            _LOGGER.error("Login Stat Data : Missing values in values: %s", values)
+            error_flag = True
+        return not error_flag
+
+    def retrieve_data(self):
+        """Return current power value."""
+        _LOGGER.debug("Login Stat Data : Perform login")
+        self._login_stat_data = AtomeLoginStatData()
+        self._retrieve_login_stat()
+        return self._login_stat_data
 
 
 class AtomeLiveData:
@@ -413,6 +488,43 @@ class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
         )
 
 
+class AtomeLoginStatSensor(AtomeGenericSensor):
+    """Class used to retrieve Login Stat Data."""
+
+    def __init__(self, coordinator, name, user_reference, atome_device_name, atome_linky_number):
+        """Initialize the data."""
+        super().__init__(
+            coordinator, name, user_reference, atome_device_name, LOGIN_STAT_TYPE
+        )
+        self._login_stat_data = None
+        self._atome_linky_number = atome_linky_number
+
+        # HA attributes
+        #self._attr_native_unit_of_measurement = "id"
+        #self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    @property
+    def extra_state_attributes(self):
+        """Return the state attributes of this device."""
+        attr = {ATTR_ATTRIBUTION: ATTRIBUTION}
+        attr["user_id"] = self._login_stat_data.user_id
+        attr["user_reference"] = self._login_stat_data.user_ref
+        attr["linky_number_within_account"] = self._atome_linky_number
+        return attr
+
+    @property
+    def native_value(self):
+        """Return the state of this device."""
+        _LOGGER.debug("Login Stat Data : display")
+        return self._login_stat_data.user_ref
+
+    def update_from_latest_data(self):
+        """Fetch new state data for this sensor."""
+        _LOGGER.debug("Async Update Login Stat sensor %s", self._name)
+        self._login_stat_data = self.coordinator.data
+
+
 class AtomeLiveSensor(AtomeGenericSensor):
     """Class used to retrieve Live Data."""
 
@@ -426,7 +538,7 @@ class AtomeLiveSensor(AtomeGenericSensor):
         # HA attributes
         self._attr_device_class = SensorDeviceClass.POWER
         self._attr_native_unit_of_measurement = POWER_WATT
-        self._attr_state_class = STATE_CLASS_MEASUREMENT
+        self._attr_state_class = SensorStateClass.MEASUREMENT
 
     @property
     def extra_state_attributes(self):
@@ -434,7 +546,6 @@ class AtomeLiveSensor(AtomeGenericSensor):
         attr = {ATTR_ATTRIBUTION: ATTRIBUTION}
         attr["subscribed_power"] = self._live_data.subscribed_power
         attr["is_connected"] = self._live_data.is_connected
-        attr["user_reference"] = self._user_reference
         return attr
 
     @property
@@ -445,7 +556,7 @@ class AtomeLiveSensor(AtomeGenericSensor):
 
     def update_from_latest_data(self):
         """Fetch new state data for this sensor."""
-        _LOGGER.debug("Async Update sensor %s", self._name)
+        _LOGGER.debug("Async Live Data Update sensor %s", self._name)
         self._live_data = self.coordinator.data
 
 
@@ -467,7 +578,7 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
         # HA attributes
         self._attr_device_class = SensorDeviceClass.ENERGY
         self._attr_native_unit_of_measurement = ENERGY_KILO_WATT_HOUR
-        self._attr_state_class = STATE_CLASS_TOTAL_INCREASING
+        self._attr_state_class = SensorStateClass.MEASUREMENT
 
     async def async_added_to_hass(self):
         """Handle added to Hass."""
@@ -504,7 +615,7 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
 
     def update_from_latest_data(self):
         """Fetch new state data for this sensor."""
-        _LOGGER.debug("Async Update sensor %s", self._name)
+        _LOGGER.debug("Async Period Update sensor %s", self._name)
         new_period_data = self.coordinator.data
         if new_period_data.usage and self._last_valid_period_data.usage:
             _LOGGER.debug(

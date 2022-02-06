@@ -307,6 +307,7 @@ class AtomeLoginStatData:
         """Initialize the data."""
         self.user_id = None
         self.user_ref = None
+        self.list_user_ref = ""
 
 
 class AtomeLoginStatServerEndPoint(AtomeGenericServerEndPoint):
@@ -327,6 +328,13 @@ class AtomeLoginStatServerEndPoint(AtomeGenericServerEndPoint):
             self._login_stat_data.user_ref = values["subscriptions"][
                 (self._atome_linky_number - 1)
             ]["reference"]
+
+            self._login_stat_data.list_user_ref = ""
+            for i in range(len(values["subscriptions"])):
+                self._login_stat_data.list_user_ref = (
+                    self._login_stat_data.list_user_ref + "," + str(values["subscriptions"][i]["reference"])
+                )
+
             _LOGGER.debug(
                 "Updating Atome live data. Got: %d, isConnected: %s, subscribed: %d",
                 self._login_stat_data.user_id,
@@ -527,6 +535,7 @@ class AtomeLoginStatSensor(AtomeGenericSensor):
         attr["user_id"] = self._login_stat_data.user_id
         attr["user_reference"] = self._login_stat_data.user_ref
         attr["linky_number_within_account"] = self._atome_linky_number
+        attr["list_user_reference"] = self._login_stat_data.list_user_ref
         return attr
 
     @property

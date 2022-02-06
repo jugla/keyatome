@@ -56,12 +56,12 @@ where :
 **Check that *atome* of HomeAssistant is not activated (i.e. declared in configuration.yaml) to avoid too many request on Atome Server**
 
 Several sensors are created (assumed that name given at configuration is atome with atome_linky_number is one) :
-- sensor.atome_live_power with instant power (connection status, max subscription power)
-- sensor.atome_daily with current daily consumption (in attributes current price, previous consumption, previous price)
-- sensor.atome_weekly with current weekly consumption (in attributes current price, previous consumption, previous price)
-- sensor.atome_monthly with current monthly consumption (in attributes current price, previous consumption, previous price)
-- sensor.atome_yearly with current yearly consumption (in attributes current price, previous consumption, previous price)
-- sensor.atome_login_stat with current user id, user ref
+- *sensor.atome_live_power* with instant power (connection status, max subscription power)
+- *sensor.atome_daily* with current daily consumption (in attributes current price, previous consumption, previous price)
+- *sensor.atome_weekly* with current weekly consumption (in attributes current price, previous consumption, previous price)
+- *sensor.atome_monthly* with current monthly consumption (in attributes current price, previous consumption, previous price)
+- *sensor.atome_yearly* with current yearly consumption (in attributes current price, previous consumption, previous price)
+- *sensor.atome_login_stat* with current user id, user ref (**this sensor is availble since v5.0.0**)
 
 (Please check the *sensor.atome_login_stat* to check is you have addressed the right linky in your user account)
 

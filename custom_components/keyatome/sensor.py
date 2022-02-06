@@ -129,7 +129,7 @@ async def async_create_live_coordinator(hass, atome_client, name):
 async def async_create_login_stat_coordinator(
     hass, atome_client, name, atome_linky_number
 ):
-    """Create coordinator for live data."""
+    """Create coordinator for login stat data."""
     atome_login_stat_end_point = AtomeLoginStatServerEndPoint(
         atome_client, name, atome_linky_number
     )
@@ -169,8 +169,10 @@ async def create_coordinators_and_sensors(
     weekly_sensor_name = sensor_root_name_linky + WEEKLY_NAME_SUFFIX
     yearly_sensor_name = sensor_root_name_linky + YEARLY_NAME_SUFFIX
 
+    # Create name for device
     atome_device_name = sensor_root_name_linky + DEVICE_NAME_SUFFIX
 
+    # Perform login
     atome_client = AtomeClient(username, password, atome_linky_number)
     login_value = await hass.async_add_executor_job(atome_client.login)
     if login_value is None:
@@ -181,7 +183,7 @@ async def create_coordinators_and_sensors(
     user_reference = atome_client.get_user_reference()
     _LOGGER.debug("login user reference is %s", user_reference)
 
-    # Login Data
+    # Login Stat Data
     login_stat_coordinator = await async_create_login_stat_coordinator(
         hass, atome_client, login_stat_sensor_name, atome_linky_number
     )

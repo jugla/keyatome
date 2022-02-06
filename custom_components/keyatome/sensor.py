@@ -211,6 +211,7 @@ async def create_coordinators_and_sensors(
         hass, atome_client, yearly_sensor_name, YEARLY_PERIOD_TYPE, YEARLY_SCAN_INTERVAL
     )
 
+    # declaration of all sensors
     sensors = [
         AtomeLoginStatSensor(
             login_stat_coordinator,

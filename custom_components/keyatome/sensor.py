@@ -126,12 +126,18 @@ async def async_create_live_coordinator(hass, atome_client, name):
     return live_coordinator
 
 
-async def async_create_login_stat_coordinator(hass, atome_client, name, atome_linky_number):
+async def async_create_login_stat_coordinator(
+    hass, atome_client, name, atome_linky_number
+):
     """Create coordinator for live data."""
-    atome_login_stat_end_point = AtomeLoginStatServerEndPoint(atome_client, name, atome_linky_number)
+    atome_login_stat_end_point = AtomeLoginStatServerEndPoint(
+        atome_client, name, atome_linky_number
+    )
 
     async def async_login_stat_update_data():
-        data = await hass.async_add_executor_job(atome_login_stat_end_point.retrieve_data)
+        data = await hass.async_add_executor_job(
+            atome_login_stat_end_point.retrieve_data
+        )
         return data
 
     login_stat_coordinator = DataUpdateCoordinator(
@@ -205,7 +211,11 @@ async def create_coordinators_and_sensors(
 
     sensors = [
         AtomeLoginStatSensor(
-            login_stat_coordinator, login_stat_sensor_name, user_reference, atome_device_name, atome_linky_number
+            login_stat_coordinator,
+            login_stat_sensor_name,
+            user_reference,
+            atome_device_name,
+            atome_linky_number,
         ),
         AtomeLiveSensor(
             live_coordinator, live_sensor_name, user_reference, atome_device_name
@@ -312,9 +322,9 @@ class AtomeLoginStatServerEndPoint(AtomeGenericServerEndPoint):
         error_flag = False
         try:
             self._login_stat_data.user_id = str(values["id"])
-            self._login_stat_data.user_ref = values["subscriptions"][(self._atome_linky_number-1)][
-                "reference"
-            ]
+            self._login_stat_data.user_ref = values["subscriptions"][
+                (self._atome_linky_number - 1)
+            ]["reference"]
             _LOGGER.debug(
                 "Updating Atome live data. Got: %d, isConnected: %s, subscribed: %d",
                 self._login_stat_data.user_id,
@@ -491,7 +501,9 @@ class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
 class AtomeLoginStatSensor(AtomeGenericSensor):
     """Class used to retrieve Login Stat Data."""
 
-    def __init__(self, coordinator, name, user_reference, atome_device_name, atome_linky_number):
+    def __init__(
+        self, coordinator, name, user_reference, atome_device_name, atome_linky_number
+    ):
         """Initialize the data."""
         super().__init__(
             coordinator, name, user_reference, atome_device_name, LOGIN_STAT_TYPE
@@ -500,8 +512,8 @@ class AtomeLoginStatSensor(AtomeGenericSensor):
         self._atome_linky_number = atome_linky_number
 
         # HA attributes
-        #self._attr_native_unit_of_measurement = "id"
-        #self._attr_state_class = SensorStateClass.MEASUREMENT
+        # self._attr_native_unit_of_measurement = "id"
+        # self._attr_state_class = SensorStateClass.MEASUREMENT
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     @property

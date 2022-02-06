@@ -333,7 +333,9 @@ class AtomeLoginStatServerEndPoint(AtomeGenericServerEndPoint):
             self._login_stat_data.list_user_ref = ""
             for i in range(len(values["subscriptions"])):
                 self._login_stat_data.list_user_ref = (
-                    self._login_stat_data.list_user_ref + "," + str(values["subscriptions"][i]["reference"])
+                    self._login_stat_data.list_user_ref
+                    + ", "
+                    + str(values["subscriptions"][i]["reference"])
                 )
 
             _LOGGER.debug(

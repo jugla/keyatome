@@ -606,7 +606,7 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
         # HA attributes
         self._attr_device_class = SensorDeviceClass.ENERGY
         self._attr_native_unit_of_measurement = ENERGY_KILO_WATT_HOUR
-        self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_state_class = SensorStateClass.TOTAL_INCREASING
 
     async def async_added_to_hass(self):
         """Handle added to Hass."""

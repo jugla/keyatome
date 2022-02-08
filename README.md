@@ -65,6 +65,21 @@ Several sensors are created (assumed that name given at configuration is atome w
 
 (Please check the *sensor.atome_login_stat* to check is you have addressed the right linky in your user account)
 
+## Typical use
+You can use the sensor *sensor.atome_daily* to monitor electrcity energy consumption within energy dashboard.
+To add price in dashboard, please in configuration.yaml add the following entity :
+
+```yaml
+template:
+  - sensor:
+      - name: atome_daily_price
+        state: "{{ state_attr('sensor.atome_daily', 'price') | float }}"
+        unit_of_measurement: 'EUR'
+        state_class: total_increasing
+        device_class: monetary
+```
+
+
 ## Breaking changes
 <details><summary>detail description</summary>
 

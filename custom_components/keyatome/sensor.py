@@ -648,7 +648,10 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
         ## compute value below which it will be a valid reset (decrease)
         if self._period_type == DAILY_PERIOD_TYPE:
             period_type_min_margin = 1.0
-        elif self._period_type == WEEKLY_PERIOD_TYPE or self._period_type == MONTHLY_PERIOD_TYPE:
+        elif (
+            self._period_type == WEEKLY_PERIOD_TYPE
+            or self._period_type == MONTHLY_PERIOD_TYPE
+        ):
             period_type_min_margin = 10
         else:
             period_type_min_margin = 100
@@ -661,8 +664,8 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
                 new_period_data.usage,
                 self._last_valid_period_data.usage,
             )
-            if ((new_period_data.usage > period_type_min_margin)
-                and ((new_period_data.usage < self._last_valid_period_data.usage) )
+            if (new_period_data.usage > period_type_min_margin) and (
+                (new_period_data.usage < self._last_valid_period_data.usage)
             ):
                 # reset received value
                 new_period_data = AtomePeriodData()
@@ -677,8 +680,8 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
                 self._last_valid_period_data.usage,
             )
             # Take a margin to avoid storage of previous data
-            if ((new_period_data.usage < period_type_min_margin)
-                and ((new_period_data.usage - self._last_valid_period_data.usage) < (-1.0))
+            if (new_period_data.usage < period_type_min_margin) and (
+                (new_period_data.usage - self._last_valid_period_data.usage) < (-1.0)
             ):
                 _LOGGER.debug(
                     "Previous period %s becomes %s",

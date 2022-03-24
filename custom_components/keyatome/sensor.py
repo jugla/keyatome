@@ -645,6 +645,30 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
         """Fetch new state data for this sensor."""
         _LOGGER.debug("Async Period Update sensor %s", self._name)
         new_period_data = self.coordinator.data
+        ## compute value below which it will be a valid reset (decrease)
+        if self._period_type == DAILY_PERIOD_TYPE:
+            period_type_min_margin = 1.0
+        elif self._period_type == WEEKLY_PERIOD_TYPE or self._period_type == MONTHLY_PERIOD_TYPE:
+            period_type_min_margin = 10
+        else:
+            period_type_min_margin = 100
+
+        ## compute consistency
+        if new_period_data.usage and self._last_valid_period_data.usage:
+            _LOGGER.debug(
+                "Check consistecy period %s : New %s ; Current %s",
+                self._name,
+                new_period_data.usage,
+                self._last_valid_period_data.usage,
+            )
+            if ((new_period_data.usage > period_type_min_margin)
+                and ((new_period_data.usage < self._last_valid_period_data.usage) )
+            ):
+                # reset received value
+                new_period_data = AtomePeriodData()
+                _LOGGER.error("Period are strictly increasing except reset to zero")
+
+        ## compute last previous data
         if new_period_data.usage and self._last_valid_period_data.usage:
             _LOGGER.debug(
                 "Check period %s : New %s ; Current %s",
@@ -653,7 +677,9 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
                 self._last_valid_period_data.usage,
             )
             # Take a margin to avoid storage of previous data
-            if (new_period_data.usage - self._last_valid_period_data.usage) < (-1.0):
+            if ((new_period_data.usage < period_type_min_margin)
+                and ((new_period_data.usage - self._last_valid_period_data.usage) < (-1.0))
+            ):
                 _LOGGER.debug(
                     "Previous period %s becomes %s",
                     self._name,

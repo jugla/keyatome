@@ -645,7 +645,7 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
         """Fetch new state data for this sensor."""
         _LOGGER.debug("Async Period Update sensor %s", self._name)
         new_period_data = self.coordinator.data
-        ## compute value below which it will be a valid reset (decrease)
+        # compute value below which it will be a valid reset (decrease)
         if self._period_type == DAILY_PERIOD_TYPE:
             period_type_min_margin = 1.0
         elif (
@@ -656,7 +656,7 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
         else:
             period_type_min_margin = 100
 
-        ## compute consistency
+        # compute consistency
         if new_period_data.usage and self._last_valid_period_data.usage:
             _LOGGER.debug(
                 "Check consistecy period %s : New %s ; Current %s",
@@ -671,7 +671,7 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
                 new_period_data = AtomePeriodData()
                 _LOGGER.error("Period are strictly increasing except reset to zero")
 
-        ## compute last previous data
+        # compute last previous data
         if new_period_data.usage and self._last_valid_period_data.usage:
             _LOGGER.debug(
                 "Check period %s : New %s ; Current %s",

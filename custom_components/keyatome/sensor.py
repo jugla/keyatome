@@ -667,7 +667,7 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
             if (new_period_data.usage > period_type_min_margin) and (
                 (new_period_data.usage < self._last_valid_period_data.usage)
             ):
-                # reset received value
+                # reset received value : none value
                 new_period_data = AtomePeriodData()
                 _LOGGER.error("Period are strictly increasing except reset to zero")
 

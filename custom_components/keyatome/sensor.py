@@ -339,7 +339,7 @@ class AtomeLoginStatServerEndPoint(AtomeGenericServerEndPoint):
                 )
 
             _LOGGER.debug(
-                "Updating Atome live data. Got: %d, isConnected: %s, subscribed: %d",
+                "Updating Atome Login data. ID: %s, REF: %s",
                 self._login_stat_data.user_id,
                 self._login_stat_data.user_ref,
             )
@@ -387,7 +387,7 @@ class AtomeLiveServerEndPoint(AtomeGenericServerEndPoint):
             self._live_data.subscribed_power = values["subscribed"]
             self._live_data.is_connected = values["isConnected"]
             _LOGGER.debug(
-                "Updating Atome live data. Got: %d, isConnected: %s, subscribed: %d",
+                "Updating Atome live data. Got: %f, isConnected: %s, subscribed: %d",
                 self._live_data.live_power,
                 self._live_data.is_connected,
                 self._live_data.subscribed_power,
@@ -438,7 +438,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
             self._period_data.usage = values["total"] / 1000
             self._period_data.price = round(values["price"], ROUND_PRICE)
             _LOGGER.debug(
-                "Updating Atome %s data. Got: %d",
+                "Updating Atome %s data. Got: %f",
                 self._period_type,
                 self._period_data.usage,
             )

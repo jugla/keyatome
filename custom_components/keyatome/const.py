@@ -45,6 +45,19 @@ WEEKLY_SCAN_INTERVAL = timedelta(hours=1, seconds=5)
 MONTHLY_SCAN_INTERVAL = timedelta(hours=1, seconds=7)
 YEARLY_SCAN_INTERVAL = timedelta(days=1, seconds=11)
 
+# Value used to determine if periodic information are allowed to be reset
+# as Dayly is performed every 5 minutes,
+# the first request can be done with a result below 2kW
+DAYLY_TRUST_MAX_INTERVAL = 2
+# as Weekly/Monthly are performed every hour,
+# the first request can be done with a result below 20kW
+WEEKLY_TRUST_MAX_INTERVAL = 20
+MONTHLY_TRUST_MAX_INTERVAL = 20
+# as Yearly request is performed once a day,
+# the first request can be done with a result below 200kW
+YEARLY_TRUST_MAX_INTERVAL = 200
+
+
 # Type to call py key atome
 LIVE_TYPE = "live"
 LOGIN_STAT_TYPE = "login_stat"

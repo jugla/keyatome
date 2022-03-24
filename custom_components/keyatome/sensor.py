@@ -43,6 +43,7 @@ from .const import (
     CONF_ATOME_LINKY_NUMBER,
     DAILY_NAME_SUFFIX,
     DAILY_SCAN_INTERVAL,
+    DAYLY_TRUST_MAX_INTERVAL,
     DATA_COORDINATOR,
     DEBUG_FLAG,
     DEFAULT_ATOME_LINKY_NUMBER,
@@ -58,10 +59,13 @@ from .const import (
     LOGIN_STAT_TYPE,
     MONTHLY_NAME_SUFFIX,
     MONTHLY_SCAN_INTERVAL,
+    MONTHLY_TRUST_MAX_INTERVAL,
     ROUND_PRICE,
     WEEKLY_NAME_SUFFIX,
     WEEKLY_SCAN_INTERVAL,
+    WEEKLY_TRUST_MAX_INTERVAL,
     YEARLY_NAME_SUFFIX,
+    YEARLY_TRUST_MAX_INTERVAL,
     YEARLY_SCAN_INTERVAL,
 )
 
@@ -647,14 +651,13 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
         new_period_data = self.coordinator.data
         # compute value below which it will be a valid reset (decrease)
         if self._period_type == DAILY_PERIOD_TYPE:
-            period_type_min_margin = 1.0
-        elif (
-            self._period_type == WEEKLY_PERIOD_TYPE
-            or self._period_type == MONTHLY_PERIOD_TYPE
-        ):
-            period_type_min_margin = 10
+            period_type_min_margin = DAYLY_TRUST_MAX_INTERVAL
+        elif self._period_type == WEEKLY_PERIOD_TYPE:
+            period_type_min_margin = WEEKLY_TRUST_MAX_INTERVAL
+        elif self._period_type == MONTHLY_PERIOD_TYPE:
+            period_type_min_margin = MONTHLY_TRUST_MAX_INTERVAL
         else:
-            period_type_min_margin = 100
+            period_type_min_margin = YEARLY_TRUST_MAX_INTERVAL
 
         # compute consistency
         if new_period_data.usage and self._last_valid_period_data.usage:

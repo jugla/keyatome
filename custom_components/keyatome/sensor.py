@@ -341,11 +341,11 @@ class Error_Manager:
         """Reset cumulative error."""
         self._nb_of_cumulated_error = 0
 
-    def is_beyond_max_error (self):
+    def is_beyond_max_error(self):
         """Say if cumulative error is too high."""
-        return (self._nb_of_cumulated_error >= self._max_error)
+        return self._nb_of_cumulated_error >= self._max_error
 
-    def get_number_of_cumulative_error (self):
+    def get_number_of_cumulative_error(self):
         """Get the number of errors."""
         return self._nb_of_cumulated_error
 

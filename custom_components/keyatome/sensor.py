@@ -43,8 +43,8 @@ from .const import (
     CONF_ATOME_LINKY_NUMBER,
     DAILY_NAME_SUFFIX,
     DAILY_SCAN_INTERVAL,
-    DAYLY_TRUST_MAX_INTERVAL,
     DATA_COORDINATOR,
+    DAYLY_TRUST_MAX_INTERVAL,
     DEBUG_FLAG,
     DEFAULT_ATOME_LINKY_NUMBER,
     DEFAULT_NAME,
@@ -65,8 +65,8 @@ from .const import (
     WEEKLY_SCAN_INTERVAL,
     WEEKLY_TRUST_MAX_INTERVAL,
     YEARLY_NAME_SUFFIX,
-    YEARLY_TRUST_MAX_INTERVAL,
     YEARLY_SCAN_INTERVAL,
+    YEARLY_TRUST_MAX_INTERVAL,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -94,7 +94,9 @@ async def async_create_period_coordinator(
     hass, atome_client, name, sensor_type, scan_interval, error_counter
 ):
     """Create coordinator for period data."""
-    atome_period_end_point = AtomePeriodServerEndPoint(atome_client, name, sensor_type, error_counter)
+    atome_period_end_point = AtomePeriodServerEndPoint(
+        atome_client, name, sensor_type, error_counter
+    )
 
     async def async_period_update_data():
         data = await hass.async_add_executor_job(atome_period_end_point.retrieve_data)
@@ -202,10 +204,20 @@ async def create_coordinators_and_sensors(
 
     # Periodic Data
     daily_coordinator = await async_create_period_coordinator(
-        hass, atome_client, daily_sensor_name, DAILY_PERIOD_TYPE, DAILY_SCAN_INTERVAL, error_counter
+        hass,
+        atome_client,
+        daily_sensor_name,
+        DAILY_PERIOD_TYPE,
+        DAILY_SCAN_INTERVAL,
+        error_counter,
     )
     weekly_coordinator = await async_create_period_coordinator(
-        hass, atome_client, weekly_sensor_name, WEEKLY_PERIOD_TYPE, WEEKLY_SCAN_INTERVAL, error_counter
+        hass,
+        atome_client,
+        weekly_sensor_name,
+        WEEKLY_PERIOD_TYPE,
+        WEEKLY_SCAN_INTERVAL,
+        error_counter,
     )
     monthly_coordinator = await async_create_period_coordinator(
         hass,
@@ -216,7 +228,12 @@ async def create_coordinators_and_sensors(
         error_counter,
     )
     yearly_coordinator = await async_create_period_coordinator(
-        hass, atome_client, yearly_sensor_name, YEARLY_PERIOD_TYPE, YEARLY_SCAN_INTERVAL, error_counter
+        hass,
+        atome_client,
+        yearly_sensor_name,
+        YEARLY_PERIOD_TYPE,
+        YEARLY_SCAN_INTERVAL,
+        error_counter,
     )
 
     # declaration of all sensors
@@ -331,6 +348,26 @@ class Error_Manager:
         """Get the number of errors."""
         return self._nb_of_cumulated_error
 
+class Error_Manager:
+    """Class to count error"""
+
+    def __init__(self, max_error):
+        self._max_error = max_error
+        self._nb_of_cumulated_error = 0
+
+    def increase_error(self, nb_of_error):
+        self._nb_of_cumulated_error = self._nb_of_cumulated_error + nb_of_error
+
+    def reset_error(self):
+        self._nb_of_cumulated_error = 0
+
+    def is_beyond_max_error(self):
+        return self._nb_of_cumulated_error >= self._max_error
+
+    def get_number_of_cumulative_error(self):
+        return self._nb_of_cumulated_error
+
+
 class AtomeGenericServerEndPoint:
     """Basic class to retrieve data from server."""
 
@@ -340,6 +377,7 @@ class AtomeGenericServerEndPoint:
         self._name = name
         self._period_type = period_type
         self._error_counter = error_counter
+
 
 class AtomeLoginStatData:
     """Class used to store Login Stat Data."""
@@ -440,7 +478,7 @@ class AtomeLiveServerEndPoint(AtomeGenericServerEndPoint):
             self._error_counter.reset_error()
             return True
 
-        #even if warning count for 1
+        # even if warning count for 1
         self._error_counter.increase_error(1)
 
         if retry_flag:
@@ -500,7 +538,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
             self._error_counter.reset_error()
             return True
 
-        #even if warning count for 1
+        # even if warning count for 1
         self._error_counter.increase_error(1)
         if retry_flag:
             _LOGGER.error(
@@ -581,11 +619,22 @@ class AtomeLoginStatSensor(AtomeGenericSensor):
     """Class used to retrieve Login Stat Data."""
 
     def __init__(
-        self, coordinator, name, user_reference, atome_device_name, atome_linky_number, error_counter
+        self,
+        coordinator,
+        name,
+        user_reference,
+        atome_device_name,
+        atome_linky_number,
+        error_counter,
     ):
         """Initialize the data."""
         super().__init__(
-            coordinator, name, user_reference, atome_device_name, LOGIN_STAT_TYPE, error_counter
+            coordinator,
+            name,
+            user_reference,
+            atome_device_name,
+            LOGIN_STAT_TYPE,
+            error_counter,
         )
         self._login_stat_data = None
         self._atome_linky_number = atome_linky_number
@@ -605,7 +654,9 @@ class AtomeLoginStatSensor(AtomeGenericSensor):
         attr["user_reference"] = self._login_stat_data.user_ref
         attr["linky_number_within_account"] = self._atome_linky_number
         attr["list_user_reference"] = self._login_stat_data.list_user_ref
-        attr["cumulative_error_warning"] = self._error_counter.get_number_of_cumulative_error()
+        attr[
+            "cumulative_error_warning"
+        ] = self._error_counter.get_number_of_cumulative_error()
         return attr
 
     @property
@@ -623,10 +674,17 @@ class AtomeLoginStatSensor(AtomeGenericSensor):
 class AtomeLiveSensor(AtomeGenericSensor):
     """Class used to retrieve Live Data."""
 
-    def __init__(self, coordinator, name, user_reference, atome_device_name, error_counter):
+    def __init__(
+        self, coordinator, name, user_reference, atome_device_name, error_counter
+    ):
         """Initialize the data."""
         super().__init__(
-            coordinator, name, user_reference, atome_device_name, LIVE_TYPE, error_counter
+            coordinator,
+            name,
+            user_reference,
+            atome_device_name,
+            LIVE_TYPE,
+            error_counter,
         )
         self._live_data = None
 
@@ -659,11 +717,22 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
     """Class used to retrieve Period Data."""
 
     def __init__(
-        self, coordinator, name, user_reference, atome_device_name, period_type, error_counter
+        self,
+        coordinator,
+        name,
+        user_reference,
+        atome_device_name,
+        period_type,
+        error_counter,
     ):
         """Initialize the data."""
         super().__init__(
-            coordinator, name, user_reference, atome_device_name, period_type, error_counter
+            coordinator,
+            name,
+            user_reference,
+            atome_device_name,
+            period_type,
+            error_counter,
         )
         self._period_data = AtomePeriodData()
         self._previous_period_data = AtomePeriodData()

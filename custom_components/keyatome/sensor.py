@@ -324,6 +324,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     async_add_entities(sensors, True)
 
+
 class Error_Manager:
     """Class to count error."""
 
@@ -346,25 +347,6 @@ class Error_Manager:
 
     def get_number_of_cumulative_error (self):
         """Get the number of errors."""
-        return self._nb_of_cumulated_error
-
-class Error_Manager:
-    """Class to count error"""
-
-    def __init__(self, max_error):
-        self._max_error = max_error
-        self._nb_of_cumulated_error = 0
-
-    def increase_error(self, nb_of_error):
-        self._nb_of_cumulated_error = self._nb_of_cumulated_error + nb_of_error
-
-    def reset_error(self):
-        self._nb_of_cumulated_error = 0
-
-    def is_beyond_max_error(self):
-        return self._nb_of_cumulated_error >= self._max_error
-
-    def get_number_of_cumulative_error(self):
         return self._nb_of_cumulated_error
 
 

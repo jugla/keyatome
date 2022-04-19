@@ -57,6 +57,7 @@ from .const import (
     LOGIN_STAT_NAME_SUFFIX,
     LOGIN_STAT_SCAN_INTERVAL,
     LOGIN_STAT_TYPE,
+    MAX_PYKEYATOME_RETRY,
     MONTHLY_NAME_SUFFIX,
     MONTHLY_SCAN_INTERVAL,
     MONTHLY_TRUST_MAX_INTERVAL,
@@ -190,7 +191,7 @@ async def create_coordinators_and_sensors(
     _LOGGER.debug("login user reference is %s", user_reference)
 
     # count number of error
-    error_counter = Error_Manager(10)
+    error_counter = Error_Manager(MAX_PYKEYATOME_RETRY)
 
     # Login Stat Data
     login_stat_coordinator = await async_create_login_stat_coordinator(

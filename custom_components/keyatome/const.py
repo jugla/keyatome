@@ -37,6 +37,9 @@ ATTR_PREVIOUS_PERIOD_USAGE = "previous_consumption"
 ATTR_PREVIOUS_PERIOD_PRICE = "previous_price"
 ATTR_PERIOD_PRICE = "price"
 
+# Max number of retry for pykeyatome
+MAX_PYKEYATOME_RETRY = 4
+
 # Scan interval (avoid synchronisation to lower request per seconds on server)
 LOGIN_STAT_SCAN_INTERVAL = timedelta(hours=1, minutes=30, seconds=13)
 LIVE_SCAN_INTERVAL = timedelta(seconds=30)

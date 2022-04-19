@@ -573,8 +573,10 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
             self._retrieve_period_usage(True)
         return self._period_data
 
+
 class AtomeDiagnostic(SensorEntity):
-    """Sensor to diagnostic Atome Sensors """
+    """Sensor to diagnostic Atome Sensors."""
+
     def __init__(
         self,
         name,

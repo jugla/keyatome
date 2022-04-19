@@ -699,6 +699,7 @@ class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
         self._error_counter = error_counter
 
     def give_name_and_unique_id(self):
+        """Give info to retrieve in registry sensor."""
         return {"name": self._attr_name, "unique_id": self._attr_unique_id}
 
     async def async_added_to_hass(self) -> None:

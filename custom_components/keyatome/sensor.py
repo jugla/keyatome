@@ -597,12 +597,9 @@ class AtomeDiagnostic(SensorEntity):
 
         self._attr_icon = "mdi:home-alert"
 
-
         self._error_counter = error_counter
 
         self._sensors_to_follow = sensors_to_follow
-
-
 
     def _async_atome_sensor_state_listener(self, event):
 
@@ -612,7 +609,6 @@ class AtomeDiagnostic(SensorEntity):
             return
 
         self.schedule_update_ha_state(force_refresh=True)
-
 
     async def async_added_to_hass(self):
         """Handle added to Hass."""
@@ -627,12 +623,12 @@ class AtomeDiagnostic(SensorEntity):
 
         for sensor_to_listen in self._sensors_to_follow:
             entity_id_main_sensor = registry.async_get_entity_id(
-               "sensor", DOMAIN, sensor_to_listen.get("unique_id")
+                "sensor", DOMAIN, sensor_to_listen.get("unique_id")
             )
             _LOGGER.debug("Atome: entity main sensor %s", entity_id_main_sensor)
 
             if entity_id_main_sensor is None:
-               entity_id_main_sensor = "sensor." + sensor_to_listen.get("name")
+                entity_id_main_sensor = "sensor." + sensor_to_listen.get("name")
 
             entity_id_sensors.append(entity_id_main_sensor)
 
@@ -656,7 +652,6 @@ class AtomeDiagnostic(SensorEntity):
             "cumulative_error_warning"
         ] = self._error_counter.get_number_of_cumulative_error()
         return attr
-
 
     @property
     def native_value(self):
@@ -704,10 +699,7 @@ class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
         self._error_counter = error_counter
 
     def give_name_and_unique_id(self):
-        return {
-           "name" : self._attr_name,
-           "unique_id" : self._attr_unique_id
-        }
+        return {"name": self._attr_name, "unique_id": self._attr_unique_id}
 
     async def async_added_to_hass(self) -> None:
         """Register callbacks."""

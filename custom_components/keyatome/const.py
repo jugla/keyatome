@@ -24,6 +24,7 @@ DAILY_NAME_SUFFIX = " Daily"
 WEEKLY_NAME_SUFFIX = " Weekly"
 MONTHLY_NAME_SUFFIX = " Monthly"
 YEARLY_NAME_SUFFIX = " Yearly"
+DIAGNOSTIC_NAME_SUFFIX = "_Diagnostic"
 
 # device name
 DEVICE_NAME_SUFFIX = " Device"

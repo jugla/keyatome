@@ -22,6 +22,8 @@ from homeassistant.const import (
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo, EntityCategory
+from homeassistant.helpers.entity_registry import async_get_registry
+from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -50,6 +52,7 @@ from .const import (
     DEFAULT_NAME,
     DEVICE_CONF_URL,
     DEVICE_NAME_SUFFIX,
+    DIAGNOSTIC_NAME_SUFFIX,
     DOMAIN,
     LIVE_NAME_SUFFIX,
     LIVE_SCAN_INTERVAL,
@@ -175,6 +178,7 @@ async def create_coordinators_and_sensors(
     monthly_sensor_name = sensor_root_name_linky + MONTHLY_NAME_SUFFIX
     weekly_sensor_name = sensor_root_name_linky + WEEKLY_NAME_SUFFIX
     yearly_sensor_name = sensor_root_name_linky + YEARLY_NAME_SUFFIX
+    diagnostic_sensor_name = sensor_root_name_linky + DIAGNOSTIC_NAME_SUFFIX
 
     # Create name for device
     atome_device_name = sensor_root_name_linky + DEVICE_NAME_SUFFIX
@@ -238,55 +242,82 @@ async def create_coordinators_and_sensors(
     )
 
     # declaration of all sensors
-    sensors = [
-        AtomeLoginStatSensor(
-            login_stat_coordinator,
-            login_stat_sensor_name,
-            user_reference,
-            atome_device_name,
-            atome_linky_number,
-            error_counter,
-        ),
-        AtomeLiveSensor(
-            live_coordinator,
-            live_sensor_name,
-            user_reference,
-            atome_device_name,
-            error_counter,
-        ),
-        AtomePeriodSensor(
-            daily_coordinator,
-            daily_sensor_name,
-            user_reference,
-            atome_device_name,
-            DAILY_PERIOD_TYPE,
-            error_counter,
-        ),
-        AtomePeriodSensor(
-            weekly_coordinator,
-            weekly_sensor_name,
-            user_reference,
-            atome_device_name,
-            WEEKLY_PERIOD_TYPE,
-            error_counter,
-        ),
-        AtomePeriodSensor(
-            monthly_coordinator,
-            monthly_sensor_name,
-            user_reference,
-            atome_device_name,
-            MONTHLY_PERIOD_TYPE,
-            error_counter,
-        ),
-        AtomePeriodSensor(
-            yearly_coordinator,
-            yearly_sensor_name,
-            user_reference,
-            atome_device_name,
-            YEARLY_PERIOD_TYPE,
-            error_counter,
-        ),
-    ]
+    sensors = []
+    sensors_to_follow = []
+
+    atome_login_stat_sensor = AtomeLoginStatSensor(
+        login_stat_coordinator,
+        login_stat_sensor_name,
+        user_reference,
+        atome_device_name,
+        atome_linky_number,
+        error_counter,
+    )
+    sensors.append(atome_login_stat_sensor)
+    sensors_to_follow.append(atome_login_stat_sensor.give_name_and_unique_id())
+
+    atome_live_sensor = AtomeLiveSensor(
+        live_coordinator,
+        live_sensor_name,
+        user_reference,
+        atome_device_name,
+        error_counter,
+    )
+    sensors.append(atome_live_sensor)
+    sensors_to_follow.append(atome_live_sensor.give_name_and_unique_id())
+
+    atome_daily_sensor = AtomePeriodSensor(
+        daily_coordinator,
+        daily_sensor_name,
+        user_reference,
+        atome_device_name,
+        DAILY_PERIOD_TYPE,
+        error_counter,
+    )
+    sensors.append(atome_daily_sensor)
+    sensors_to_follow.append(atome_daily_sensor.give_name_and_unique_id())
+
+    atome_weekly_sensor = AtomePeriodSensor(
+        weekly_coordinator,
+        weekly_sensor_name,
+        user_reference,
+        atome_device_name,
+        WEEKLY_PERIOD_TYPE,
+        error_counter,
+    )
+    sensors.append(atome_weekly_sensor)
+    sensors_to_follow.append(atome_weekly_sensor.give_name_and_unique_id())
+
+    atome_monhtly_sensor = AtomePeriodSensor(
+        monthly_coordinator,
+        monthly_sensor_name,
+        user_reference,
+        atome_device_name,
+        MONTHLY_PERIOD_TYPE,
+        error_counter,
+    )
+    sensors.append(atome_monhtly_sensor)
+    sensors_to_follow.append(atome_monhtly_sensor.give_name_and_unique_id())
+
+    atome_yearly_sensor = AtomePeriodSensor(
+        yearly_coordinator,
+        yearly_sensor_name,
+        user_reference,
+        atome_device_name,
+        YEARLY_PERIOD_TYPE,
+        error_counter,
+    )
+    sensors.append(atome_yearly_sensor)
+    sensors_to_follow.append(atome_yearly_sensor.give_name_and_unique_id())
+
+    atome_diagnostic = AtomeDiagnostic(
+        diagnostic_sensor_name,
+        user_reference,
+        atome_device_name,
+        error_counter,
+        sensors_to_follow,
+    )
+    sensors.append(atome_diagnostic)
 
     return sensors
 
@@ -542,6 +573,109 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
             self._retrieve_period_usage(True)
         return self._period_data
 
+class AtomeDiagnostic(SensorEntity):
+    """Sensor to diagnostic Atome Sensors """
+    def __init__(
+        self,
+        name,
+        user_reference,
+        atome_device_name,
+        error_counter,
+        sensors_to_follow,
+    ):
+        """Initialize the data."""
+        self._name = name
+        self._user_reference = user_reference
+        self._atome_device_name = atome_device_name
+
+        self._attr_name = self._name
+        self._attr_unique_id = self._name + self._user_reference
+
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
+
+        self._attr_icon = "mdi:home-alert"
+
+
+        self._error_counter = error_counter
+
+        self._sensors_to_follow = sensors_to_follow
+
+
+
+    def _async_atome_sensor_state_listener(self, event):
+
+        # retrieve state
+        new_state = event.data.get("new_state")
+        if new_state is None:
+            return
+
+        self.schedule_update_ha_state(force_refresh=True)
+
+
+    async def async_added_to_hass(self):
+        """Handle added to Hass."""
+        await super().async_added_to_hass()
+
+        entity_id_main_sensor = None
+
+        # Fetch the name of sensor
+        registry = await async_get_registry(self.hass)
+
+        entity_id_sensors = []
+
+        for sensor_to_listen in self._sensors_to_follow:
+            entity_id_main_sensor = registry.async_get_entity_id(
+               "sensor", DOMAIN, sensor_to_listen.get("unique_id")
+            )
+            _LOGGER.debug("Atome: entity main sensor %s", entity_id_main_sensor)
+
+            if entity_id_main_sensor is None:
+               entity_id_main_sensor = "sensor." + sensor_to_listen.get("name")
+
+            entity_id_sensors.append(entity_id_main_sensor)
+
+        async_track_state_change_event(
+            self.hass,
+            entity_id_sensors,
+            self._async_atome_sensor_state_listener,
+        )
+
+        _LOGGER.debug("Atome: listen main sensor %s", str(entity_id_sensors))
+        # pure async i.e. wait for update of main sensor
+        # no need to call self.schedule_update_ha_state
+        # be robust to be sure to be update
+        self.schedule_update_ha_state(force_refresh=True)
+
+    @property
+    def extra_state_attributes(self):
+        """Return the state attributes of this device."""
+        attr = {ATTR_ATTRIBUTION: ATTRIBUTION}
+        attr[
+            "cumulative_error_warning"
+        ] = self._error_counter.get_number_of_cumulative_error()
+        return attr
+
+
+    @property
+    def native_value(self):
+        """Return the state of this device."""
+        _LOGGER.debug("Atome Diag Data : display")
+        if self._error_counter.is_beyond_max_error():
+            return "TooManyServerError"
+        return "NoIssue"
+
+    @property
+    def device_info(self):
+        """Device info for KeyAtome Server."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._user_reference)},
+            manufacturer="AtomeLinkyTotalEnergies",
+            name=self._atome_device_name,
+            model="AtomeLinky",
+            entry_type=DeviceEntryType.SERVICE,
+            configuration_url=DEVICE_CONF_URL,
+        )
+
 
 class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
     """Basic class to store atome client."""
@@ -566,6 +700,12 @@ class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
         self._attr_unique_id = self._name + self._user_reference
 
         self._error_counter = error_counter
+
+    def give_name_and_unique_id(self):
+        return {
+           "name" : self._attr_name,
+           "unique_id" : self._attr_unique_id
+        }
 
     async def async_added_to_hass(self) -> None:
         """Register callbacks."""

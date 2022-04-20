@@ -573,6 +573,29 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
             self._retrieve_period_usage(True)
         return self._period_data
 
+class AtomeDeviceInfo:
+    """Class to common device infomation."""
+    def __init__(
+        self,
+        user_reference,
+        atome_device_name,
+    ):
+        """Initialize the data."""
+        self._user_reference = user_reference
+        self._atome_device_name = atome_device_name
+
+    def get_device_info(self):
+        """Device info for KeyAtome Server."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._user_reference)},
+            manufacturer="AtomeLinkyTotalEnergies",
+            name=self._atome_device_name,
+            model="AtomeLinky",
+            entry_type=DeviceEntryType.SERVICE,
+            configuration_url=DEVICE_CONF_URL,
+        )
+
+
 
 class AtomeDiagnostic(SensorEntity):
     """Sensor to diagnostic Atome Sensors."""
@@ -586,19 +609,25 @@ class AtomeDiagnostic(SensorEntity):
         sensors_to_follow,
     ):
         """Initialize the data."""
+        # Name and unique ID
         self._name = name
         self._user_reference = user_reference
         self._atome_device_name = atome_device_name
 
+        # Device info
+        self._device_info = AtomeDeviceInfo(
+            self._user_reference, self._atome_device_name
+        )
+
+        # static HA attribute
         self._attr_name = self._name
         self._attr_unique_id = self._name + self._user_reference
 
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
+        self._attr_state_class = SensorStateClass.MEASUREMENT
 
-        self._attr_icon = "mdi:home-alert"
-
+        # Error Management
         self._error_counter = error_counter
-
         self._sensors_to_follow = sensors_to_follow
 
     def _async_atome_sensor_state_listener(self, event):
@@ -644,6 +673,15 @@ class AtomeDiagnostic(SensorEntity):
         # be robust to be sure to be update
         self.schedule_update_ha_state(force_refresh=True)
 
+
+    @property
+    def icon(self):
+        """return icon issue or not"""
+        if self._error_counter.is_beyond_max_error():
+            return "mdi:home-alert"
+        return "mdi:home-alert-outline"
+
+
     @property
     def extra_state_attributes(self):
         """Return the state attributes of this device."""
@@ -659,19 +697,12 @@ class AtomeDiagnostic(SensorEntity):
         _LOGGER.debug("Atome Diag Data : display")
         if self._error_counter.is_beyond_max_error():
             return "TooManyServerError"
-        return "NoIssue"
+        return "NoServerIssue"
 
     @property
     def device_info(self):
         """Device info for KeyAtome Server."""
-        return DeviceInfo(
-            identifiers={(DOMAIN, self._user_reference)},
-            manufacturer="AtomeLinkyTotalEnergies",
-            name=self._atome_device_name,
-            model="AtomeLinky",
-            entry_type=DeviceEntryType.SERVICE,
-            configuration_url=DEVICE_CONF_URL,
-        )
+        return self._device_info.get_device_info()
 
 
 class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
@@ -693,9 +724,16 @@ class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
         self._user_reference = user_reference
         self._atome_device_name = atome_device_name
 
+        # static HA attributes
         self._attr_name = self._name
         self._attr_unique_id = self._name + self._user_reference
 
+        # Device info
+        self._device_info = AtomeDeviceInfo(
+            self._user_reference, self._atome_device_name
+        )
+
+        # Error Management
         self._error_counter = error_counter
 
     def give_name_and_unique_id(self):
@@ -723,14 +761,7 @@ class AtomeGenericSensor(CoordinatorEntity, SensorEntity):
     @property
     def device_info(self):
         """Device info for KeyAtome Server."""
-        return DeviceInfo(
-            identifiers={(DOMAIN, self._user_reference)},
-            manufacturer="AtomeLinkyTotalEnergies",
-            name=self._atome_device_name,
-            model="AtomeLinky",
-            entry_type=DeviceEntryType.SERVICE,
-            configuration_url=DEVICE_CONF_URL,
-        )
+        return self._device_info.get_device_info()
 
 
 class AtomeLoginStatSensor(AtomeGenericSensor):
@@ -772,9 +803,6 @@ class AtomeLoginStatSensor(AtomeGenericSensor):
         attr["user_reference"] = self._login_stat_data.user_ref
         attr["linky_number_within_account"] = self._atome_linky_number
         attr["list_user_reference"] = self._login_stat_data.list_user_ref
-        attr[
-            "cumulative_error_warning"
-        ] = self._error_counter.get_number_of_cumulative_error()
         return attr
 
     @property

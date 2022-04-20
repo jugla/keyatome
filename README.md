@@ -92,6 +92,8 @@ Since release V2.1.0 : the name of sensor are `sensor.NAME_xxx` where NAME is se
 
 Since release V4.1.0 : as several linky can be managed , for linky_ref above 1, the name of sensor are `sensor.NAME_linky(number)_xxx` where NAME is set during configuration.
   NB: for linky ref equal to 1, nothing is changed.
+
+Since release V6.1.0 : cumulative_error is inside *atome_diagnostic* sensor instead of *atome_login_stat* sensor
 </details>
 
 ## Acknowledgments

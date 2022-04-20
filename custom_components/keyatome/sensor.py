@@ -625,7 +625,6 @@ class AtomeDiagnostic(SensorEntity):
         self._attr_unique_id = self._name + self._user_reference
 
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
-        self._attr_state_class = SensorStateClass.MEASUREMENT
 
         # Error Management
         self._error_counter = error_counter

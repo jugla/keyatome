@@ -573,8 +573,10 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
             self._retrieve_period_usage(True)
         return self._period_data
 
+
 class AtomeDeviceInfo:
     """Class to common device infomation."""
+
     def __init__(
         self,
         user_reference,
@@ -594,7 +596,6 @@ class AtomeDeviceInfo:
             entry_type=DeviceEntryType.SERVICE,
             configuration_url=DEVICE_CONF_URL,
         )
-
 
 
 class AtomeDiagnostic(SensorEntity):
@@ -673,14 +674,12 @@ class AtomeDiagnostic(SensorEntity):
         # be robust to be sure to be update
         self.schedule_update_ha_state(force_refresh=True)
 
-
     @property
     def icon(self):
         """return icon issue or not"""
         if self._error_counter.is_beyond_max_error():
             return "mdi:home-alert"
         return "mdi:home-alert-outline"
-
 
     @property
     def extra_state_attributes(self):

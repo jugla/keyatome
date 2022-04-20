@@ -63,7 +63,7 @@ Several sensors are created (assumed that name given at configuration is atome w
 - *sensor.atome_yearly* with current yearly consumption (in attributes current price, previous consumption, previous price)
 - *sensor.atome_login_stat* with current user id, user ref (**this sensor is available since v5.0.0**)
 - *sensor.atome_diagnostic* with synthetic state from server (cumulative_error) (**this sensor is available since v6.0.0**)
-- 
+
 (Please check the *sensor.atome_login_stat* to check is you have addressed the right linky in your user account)
 
 ## Typical use

@@ -364,6 +364,7 @@ class Error_Manager:
         """Init error class."""
         self._max_error = max_error
         self._nb_of_cumulated_error = 0
+        self._nb_of_cumulated_handled_non_increasing_value = 0
 
     def increase_error(self, nb_of_error):
         """Increase by nb the cumulative error."""
@@ -380,6 +381,20 @@ class Error_Manager:
     def get_number_of_cumulative_error(self):
         """Get the number of errors."""
         return self._nb_of_cumulated_error
+
+    def reset_handled_non_increasing_value(self):
+        """Reset cumulative error."""
+        self._nb_of_cumulated_handled_non_increasing_value = 0
+
+    def increase_handled_non_increasing_value(self, nb_of_error):
+        """Increase by nb the cumulative error."""
+        self._nb_of_cumulated_handled_non_increasing_value = (
+            self._nb_of_cumulated_handled_non_increasing_value + nb_of_error
+        )
+
+    def get_number_of_cumulated_handled_non_increasing_value(self):
+        """Get the number of errors."""
+        return self._nb_of_cumulated_handled_non_increasing_value
 
 
 class AtomeGenericServerEndPoint:
@@ -687,6 +702,9 @@ class AtomeDiagnostic(SensorEntity):
         attr[
             "cumulative_error_warning"
         ] = self._error_counter.get_number_of_cumulative_error()
+        attr[
+            "cumulative_non_increasing_value"
+        ] = self._error_counter.get_number_of_cumulated_handled_non_increasing_value()
         return attr
 
     @property
@@ -695,6 +713,11 @@ class AtomeDiagnostic(SensorEntity):
         _LOGGER.debug("Atome Diag Data : display")
         if self._error_counter.is_beyond_max_error():
             return "TooManyServerError"
+        elif (
+            self._error_counter.get_number_of_cumulated_handled_non_increasing_value()
+            > 0
+        ):
+            return "HandleNonIncreasingValueError"
         return "NoServerIssue"
 
     @property
@@ -949,6 +972,10 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
                 # reset received value : none value
                 new_period_data = AtomePeriodData()
                 _LOGGER.error("Period are strictly increasing except reset to zero")
+                # increase error by 1
+                self._error_counter.increase_handled_non_increasing_value(1)
+            else:
+                self._error_counter.reset_handled_non_increasing_value()
 
         # compute last previous data
         if new_period_data.usage and self._last_valid_period_data.usage:

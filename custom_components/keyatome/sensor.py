@@ -382,7 +382,7 @@ class Error_Manager:
         """Get the number of errors."""
         return self._nb_of_cumulated_error
 
-    def reset_handled_non_increasing_value (self):
+    def reset_handled_non_increasing_value(self):
         """Reset cumulative error."""
         self._nb_of_cumulated_handled_non_increasing_value = 0
 
@@ -714,7 +714,8 @@ class AtomeDiagnostic(SensorEntity):
         if self._error_counter.is_beyond_max_error():
             return "TooManyServerError"
         elif (
-            self._error_counter.get_number_of_cumulated_handled_non_increasing_value() > 0
+            self._error_counter.get_number_of_cumulated_handled_non_increasing_value()
+            > 0
         ):
             return "HandleNonIncreasingValueError"
         return "NoServerIssue"
@@ -975,7 +976,6 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
                 self._error_counter.increase_handled_non_increasing_value(1)
             else:
                 self._error_counter.reset_handled_non_increasing_value()
-
 
         # compute last previous data
         if new_period_data.usage and self._last_valid_period_data.usage:

@@ -1,4 +1,4 @@
 {
   "name": "keyatome",
-  "domains": ["sensor"]
+  "homeassistant" : "2021.12.0"
 }

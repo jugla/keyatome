@@ -590,7 +590,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
 
 
 class AtomeDeviceInfo:
-    """Class to common device infomation."""
+    """Class to common device information."""
 
     def __init__(
         self,
@@ -690,7 +690,7 @@ class AtomeDiagnostic(SensorEntity):
 
     @property
     def icon(self):
-        """return icon issue or not"""
+        """Return icon issue or not."""
         if self._error_counter.is_beyond_max_error():
             return "mdi:home-alert"
         return "mdi:home-alert-outline"

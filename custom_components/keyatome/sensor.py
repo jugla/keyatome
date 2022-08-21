@@ -661,7 +661,7 @@ class AtomeDiagnostic(SensorEntity):
         entity_id_main_sensor = None
 
         # Fetch the name of sensor
-        registry =  async_get(self.hass)
+        registry = async_get(self.hass)
 
         entity_id_sensors = []
 

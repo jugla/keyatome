@@ -22,7 +22,7 @@ from homeassistant.const import (
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo, EntityCategory
-from homeassistant.helpers.entity_registry import async_get_registry
+from homeassistant.helpers.entity_registry import async_get
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import (
@@ -661,7 +661,7 @@ class AtomeDiagnostic(SensorEntity):
         entity_id_main_sensor = None
 
         # Fetch the name of sensor
-        registry = await async_get_registry(self.hass)
+        registry =  async_get(self.hass)
 
         entity_id_sensors = []
 

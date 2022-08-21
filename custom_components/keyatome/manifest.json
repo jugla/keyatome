@@ -1,7 +1,7 @@
 {
   "domain": "keyatome",
   "name": "KeyAtome Linky",
-  "version" : "6.2.0",
+  "version" : "6.3.0",
   "codeowners": ["@jugla", "@baqs"],
   "documentation": "https://github.com/jugla/keyatome",
   "issue_tracker": "https://github.com/jugla/keyatome/issues",

@@ -521,13 +521,17 @@ class AtomeLiveServerEndPoint(AtomeGenericServerEndPoint):
         """Return current power value."""
         _LOGGER.debug("Live Data : Update Usage")
         self._live_data = AtomeLiveData()
-        if self._error_counter.is_beyond_max_error():
-            _LOGGER.warning("too many error Live is not fetched")
-        else:
-            if not self._retrieve_live(False):
-                _LOGGER.debug("Perform Reconnect during live request")
-                self._atome_client.login()
-                self._retrieve_live(True)
+        #if self._error_counter.is_beyond_max_error():
+        #    _LOGGER.warning("too many error Live is not fetched")
+        #else:
+        #    if not self._retrieve_live(False):
+        #        _LOGGER.debug("Perform Reconnect during live request")
+        #        self._atome_client.login()
+        #        self._retrieve_live(True)
+        if not self._retrieve_live(False):
+             _LOGGER.debug("Perform Reconnect during live request")
+             self._atome_client.login()
+             self._retrieve_live(True)
         return self._live_data
 
 

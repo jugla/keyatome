@@ -521,17 +521,18 @@ class AtomeLiveServerEndPoint(AtomeGenericServerEndPoint):
         """Return current power value."""
         _LOGGER.debug("Live Data : Update Usage")
         self._live_data = AtomeLiveData()
-        #if self._error_counter.is_beyond_max_error():
+        ## Remove Below code until DAY becomes availble
+        # if self._error_counter.is_beyond_max_error():
         #    _LOGGER.warning("too many error Live is not fetched")
-        #else:
+        # else:
         #    if not self._retrieve_live(False):
         #        _LOGGER.debug("Perform Reconnect during live request")
         #        self._atome_client.login()
         #        self._retrieve_live(True)
         if not self._retrieve_live(False):
-             _LOGGER.debug("Perform Reconnect during live request")
-             self._atome_client.login()
-             self._retrieve_live(True)
+            _LOGGER.debug("Perform Reconnect during live request")
+            self._atome_client.login()
+            self._retrieve_live(True)
         return self._live_data
 
 
@@ -555,13 +556,24 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
     def _retrieve_period_usage(self, retry_flag):
         """Return current daily/weekly/monthly/yearly power usage."""
         values = self._atome_client.get_consumption(self._period_type)
+        # dump
+        _LOGGER.error("%s : DUMP value: %s", self._period_type, values)
         if (
-            (values is not None)
-            and (values.get("total") is not None)
-            and (values.get("price") is not None)
+            values
+            is not None
+            # and (values.get("total") is not None)
+            # and (values.get("price") is not None)
         ):
-            self._period_data.usage = values["total"] / 1000
-            self._period_data.price = round(values["price"], ROUND_PRICE)
+            # self._period_data.usage = values["total"] / 1000
+            # self._period_data.price = round(values["price"], ROUND_PRICE)
+            self._period_data.usage = (values["data"][-1]["totalConsumption"]) / 1000
+            self._period_data.price = round(
+                (
+                    values["data"][-1]["consumption"]["bill1"]
+                    + values["data"][-1]["consumption"]["bill2"]
+                ),
+                ROUND_PRICE,
+            )
             _LOGGER.debug(
                 "Updating Atome %s data. Got: %f",
                 self._period_type,

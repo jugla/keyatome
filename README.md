@@ -95,7 +95,8 @@ Since release V4.1.0 : as several linky can be managed , for linky_ref above 1, 
 
 Since release V6.1.0 : cumulative_error is inside *atome_diagnostic* sensor instead of *atome_login_stat* sensor
 
-Since release V7.0.0 : implement API v2
+Since release V7.0.0 : implement Total Energies Server API v2.
+  - as a patch : month, week, year are set to zero
 
 </details>
 

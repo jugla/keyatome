@@ -557,7 +557,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         """Return current daily/weekly/monthly/yearly power usage."""
         values = self._atome_client.get_consumption(self._period_type)
         # dump
-        _LOGGER.error(
+        _LOGGER.debug(
             "%s : DUMP value: %s", self._period_type, values
         )
         if (
@@ -567,13 +567,22 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         ):
             #self._period_data.usage = values["total"] / 1000
             #self._period_data.price = round(values["price"], ROUND_PRICE)
-            self._period_data.usage = (values["data"][-1]["totalConsumption"]) / 1000
-            self._period_data.price = round((values["data"][-1]["consumption"]["bill1"]+values["data"][-1]["consumption"]["bill2"]), ROUND_PRICE)
-            _LOGGER.debug(
-                "Updating Atome %s data. Got: %f",
-                self._period_type,
-                self._period_data.usage,
-            )
+            if self._period_type == DAILY_PERIOD_TYPE:
+                self._period_data.usage = (values["data"][-1]["totalConsumption"]) / 1000
+                self._period_data.price = round((values["data"][-1]["consumption"]["bill1"]+values["data"][-1]["consumption"]["bill2"]), ROUND_PRICE)
+                _LOGGER.debug(
+                    "Updating Atome %s data. Got: %f",
+                    self._period_type,
+                    self._period_data.usage,
+                )
+            else:
+                self._period_data.usage = 0
+                self._period_data.price = 0
+                _LOGGER.debug(
+                    "PATCH NOT Updating Atome %s data. Got: %f",
+                    self._period_type,
+                    self._period_data.usage,
+                )
             # reset error
             self._error_counter.reset_error()
             return True

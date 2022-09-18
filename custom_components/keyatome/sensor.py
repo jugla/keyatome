@@ -571,15 +571,21 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
                 self._period_data.usage = (
                     values["data"][-1]["totalConsumption"]
                 ) / 1000
-                price_high = values["data"][-1]["consumption"]["bill1"]
-                if values["data"][-1]["consumption"].get("bill2") is not None:
-                   price_low = values["data"][-1]["consumption"]["bill2"]
+                if "bill2" in values["data"][-1]["consumption"]:
+                    self._period_data.price = round(
+                        (
+                            values["data"][-1]["consumption"]["bill1"]
+                            + values["data"][-1]["consumption"]["bill2"]
+                        ),
+                        ROUND_PRICE,
+                    )
                 else:
-                   price_low = 0
-                self._period_data.price = round(
-                    price_high + price_low,
-                    ROUND_PRICE,
-                )
+                    self._period_data.price = round(
+                        (
+                            values["data"][-1]["consumption"]["bill1"]
+                        ),
+                        ROUND_PRICE,
+                    )
                 _LOGGER.debug(
                     "Updating Atome %s data. Got: %f",
                     self._period_type,

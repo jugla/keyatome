@@ -522,17 +522,17 @@ class AtomeLiveServerEndPoint(AtomeGenericServerEndPoint):
         _LOGGER.debug("Live Data : Update Usage")
         self._live_data = AtomeLiveData()
         ## Remove Below code until DAY becomes availble
-        #if self._error_counter.is_beyond_max_error():
+        # if self._error_counter.is_beyond_max_error():
         #    _LOGGER.warning("too many error Live is not fetched")
-        #else:
+        # else:
         #    if not self._retrieve_live(False):
         #        _LOGGER.debug("Perform Reconnect during live request")
         #        self._atome_client.login()
         #        self._retrieve_live(True)
         if not self._retrieve_live(False):
-             _LOGGER.debug("Perform Reconnect during live request")
-             self._atome_client.login()
-             self._retrieve_live(True)
+            _LOGGER.debug("Perform Reconnect during live request")
+            self._atome_client.login()
+            self._retrieve_live(True)
         return self._live_data
 
 
@@ -562,11 +562,11 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         )
         if (
             (values is not None)
-            #and (values.get("total") is not None)
-            #and (values.get("price") is not None)
+            # and (values.get("total") is not None)
+            # and (values.get("price") is not None)
         ):
-            #self._period_data.usage = values["total"] / 1000
-            #self._period_data.price = round(values["price"], ROUND_PRICE)
+            # self._period_data.usage = values["total"] / 1000
+            # self._period_data.price = round(values["price"], ROUND_PRICE)
             if self._period_type == DAILY_PERIOD_TYPE:
                 self._period_data.usage = (values["data"][-1]["totalConsumption"]) / 1000
                 self._period_data.price = round((values["data"][-1]["consumption"]["bill1"]+values["data"][-1]["consumption"]["bill2"]), ROUND_PRICE)

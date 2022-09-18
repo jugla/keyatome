@@ -106,4 +106,4 @@ Since release V7.0.0 : implement Total Energies Server API v2.
 The first version V0.0.1 reprensents the Atom component in Home Assistant 2021.12.4 (@baqs)
 This library is a fork of this in order to implement new feature.
 
-
+* Thanks to BenoitAnastay for API v2 decoding

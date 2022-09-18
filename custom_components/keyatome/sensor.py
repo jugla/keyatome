@@ -566,6 +566,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         ):
             # self._period_data.usage = values["total"] / 1000
             # self._period_data.price = round(values["price"], ROUND_PRICE)
+
             if self._period_type == DAILY_PERIOD_TYPE:
                 self._period_data.usage = (
                     values["data"][-1]["totalConsumption"]

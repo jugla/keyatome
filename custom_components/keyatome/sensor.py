@@ -1,5 +1,6 @@
 """Linky Key Atome."""
 import logging
+from datetime import datetime, timedelta
 
 from datetime import datetime, timedelta
 
@@ -583,9 +584,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
                     )
                 else:
                     self._period_data.price = round(
-                        (
-                            values["data"][-1]["consumption"]["bill1"]
-                        ),
+                        (values["data"][-1]["consumption"]["bill1"]),
                         ROUND_PRICE,
                     )
                 _LOGGER.debug(
@@ -597,31 +596,36 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
                 ## Compute week in short way
                 current_date = datetime.fromisoformat(values["data"][-1]["time"])
                 current_day = datetime.weekday(current_date)
-                _LOGGER.debug("Date is %s , DAY number is %s", current_date, current_day)
+                _LOGGER.debug(
+                    "Date is %s , DAY number is %s", current_date, current_day
+                )
                 first_week_day_delta = timedelta(days=-current_day)
                 first_week_date = current_date - first_week_day_delta
-                _LOGGER.debug("Beginning weeks % ", first_week_date)
+                _LOGGER.debug("Beginning weeks %s ", first_week_date)
                 current_week_consumption = 0
                 current_week_price = 0
-                for i in range(current_day+1):
-                   current_week_consumption = current_week_consumption + (
-                       values["data"][-i]["totalConsumption"]
-                   ) / 1000
-                   if "bill2" in values["data"][-i]["consumption"]:
-                       current_week_price = current_week_price + round(
-                           (
-                                values["data"][-i]["consumption"]["bill1"]
-                                + values["data"][-i]["consumption"]["bill2"]
-                           ),
-                           ROUND_PRICE,
-                       )
-                   else:
-                       self._period_data.price = round(
-                           (
-                                values["data"][-i]["consumption"]["bill1"]
-                           ),
-                           ROUND_PRICE,
-                       )
+
+                for i in range(current_day + 1):
+                    try:
+                        current_week_consumption = (
+                            current_week_consumption
+                            + (values["data"][-i]["totalConsumption"]) / 1000
+                        )
+                        if "bill2" in values["data"][-i]["consumption"]:
+                            current_week_price = current_week_price + round(
+                                (
+                                    values["data"][-i]["consumption"]["bill1"]
+                                    + values["data"][-i]["consumption"]["bill2"]
+                                ),
+                                ROUND_PRICE,
+                            )
+                        else:
+                            self._period_data.price = round(
+                                (values["data"][-i]["consumption"]["bill1"]),
+                                ROUND_PRICE,
+                            )
+                    except:
+                        _LOGGER.debug("weeks %s does not exist ", -i)
                 self._period_data.usage = current_week_consumption
                 self._period_data.price = current_week_price
                 _LOGGER.debug(

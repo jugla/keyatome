@@ -556,6 +556,41 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         super().__init__(atome_client, name, period_type, error_counter)
         self._period_data = AtomePeriodData()
 
+    def _compute_period_usage(self,values,nb_of_day):
+        """Return the computation of consumption from today included"""
+        current_period_consumption = 0
+        current_period_price = 0
+
+        for i in range(1, (nb_of_day+1), 1):
+            try:
+                current_period_consumption = (
+                    current_period_consumption
+                    + (values["data"][-i]["totalConsumption"]) / 1000
+                )
+                if "bill2" in values["data"][-i]["consumption"]:
+                    current_period_price = current_period_price + round(
+                        (
+                            values["data"][-i]["consumption"]["bill1"]
+                            + values["data"][-i]["consumption"]["bill2"]
+                        ),
+                        ROUND_PRICE,
+                    )
+                else:
+                    current_period_price = current_period_price + round(
+                        (values["data"][-i]["consumption"]["bill1"]),
+                        ROUND_PRICE,
+                    )
+            except:
+                _LOGGER.debug("days %s does not exist ", -i)
+        self._period_data.usage = current_period_consumption
+        self._period_data.price = current_period_price
+        _LOGGER.debug(
+            "Updating Atome %s data. Got: %f",
+            self._period_type,
+            self._period_data.usage,
+        )
+
+
     def _retrieve_period_usage(self, retry_flag):
         """Return current daily/weekly/monthly/yearly power usage."""
         values = self._atome_client.get_consumption(self._period_type)
@@ -571,68 +606,41 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
             # self._period_data.price = round(values["price"], ROUND_PRICE)
 
             if self._period_type == DAILY_PERIOD_TYPE:
-                self._period_data.usage = (
-                    values["data"][-1]["totalConsumption"]
-                ) / 1000
-                if "bill2" in values["data"][-1]["consumption"]:
-                    self._period_data.price = round(
-                        (
-                            values["data"][-1]["consumption"]["bill1"]
-                            + values["data"][-1]["consumption"]["bill2"]
-                        ),
-                        ROUND_PRICE,
-                    )
-                else:
-                    self._period_data.price = round(
-                        (values["data"][-1]["consumption"]["bill1"]),
-                        ROUND_PRICE,
-                    )
-                _LOGGER.debug(
-                    "Updating Atome %s data. Got: %f",
-                    self._period_type,
-                    self._period_data.usage,
-                )
+                nb_of_day=1
+                self._compute_period_usage(values,nb_of_day)
+
             elif self._period_type == WEEKLY_PERIOD_TYPE:
                 ## Compute week in short way
                 current_date = datetime.fromisoformat(values["data"][-1]["time"])
-                current_day = datetime.weekday(current_date)
-                _LOGGER.debug(
-                    "Date is %s , DAY number is %s", current_date, current_day
-                )
-                first_week_day_delta = timedelta(days=-current_day)
-                first_week_date = current_date - first_week_day_delta
-                _LOGGER.debug("Beginning weeks %s ", first_week_date)
-                current_week_consumption = 0
-                current_week_price = 0
+                current_iso_weekday = datetime.isoweekday(current_date)
+                if DEBUG_FLAG:
+                    current_weekday = datetime.weekday(current_date)
+                    _LOGGER.debug(
+                        "Date is %s , WEEKDAY number is %s",
+                        current_date,
+                        current_weekday,
+                    )
+                    first_week_day_delta = timedelta(days=current_weekday)
+                    first_week_date = current_date - first_week_day_delta
+                    _LOGGER.debug("Beginning weeks %s ", first_week_date)
 
-                for i in range(current_day + 1):
-                    try:
-                        current_week_consumption = (
-                            current_week_consumption
-                            + (values["data"][-i]["totalConsumption"]) / 1000
-                        )
-                        if "bill2" in values["data"][-i]["consumption"]:
-                            current_week_price = current_week_price + round(
-                                (
-                                    values["data"][-i]["consumption"]["bill1"]
-                                    + values["data"][-i]["consumption"]["bill2"]
-                                ),
-                                ROUND_PRICE,
-                            )
-                        else:
-                            self._period_data.price = round(
-                                (values["data"][-i]["consumption"]["bill1"]),
-                                ROUND_PRICE,
-                            )
-                    except:
-                        _LOGGER.debug("weeks %s does not exist ", -i)
-                self._period_data.usage = current_week_consumption
-                self._period_data.price = current_week_price
-                _LOGGER.debug(
-                    "Updating Atome %s data. Got: %f",
-                    self._period_type,
-                    self._period_data.usage,
-                )
+                self._compute_period_usage(values,current_iso_weekday)
+
+            elif self._period_type == MONTHLY_PERIOD_TYPE:
+                ## Compute month in short way
+                current_date = datetime.fromisoformat(values["data"][-1]["time"])
+                current_day = current_date.day
+                if DEBUG_FLAG:
+                    _LOGGER.debug(
+                        "Date is %s , DAY number is %s",
+                        current_date,
+                        current_day
+                    )
+                    first_month_day_delta = timedelta(days=(current_day-1))
+                    first_month_date = current_date - first_month_day_delta
+                    _LOGGER.debug("Beginning month %s ", first_month_date)
+
+                self._compute_period_usage(values,current_day)
 
             else:
                 self._period_data.usage = 0

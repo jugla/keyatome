@@ -2,8 +2,6 @@
 import logging
 from datetime import datetime, timedelta
 
-from datetime import datetime, timedelta
-
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.components.sensor import (
@@ -556,12 +554,12 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         super().__init__(atome_client, name, period_type, error_counter)
         self._period_data = AtomePeriodData()
 
-    def _compute_period_usage(self,values,nb_of_day):
+    def _compute_period_usage(self, values, nb_of_day):
         """Return the computation of consumption from today included"""
         current_period_consumption = 0
         current_period_price = 0
 
-        for i in range(1, (nb_of_day+1), 1):
+        for i in range(1, (nb_of_day + 1), 1):
             try:
                 current_period_consumption = (
                     current_period_consumption
@@ -590,7 +588,6 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
             self._period_data.usage,
         )
 
-
     def _retrieve_period_usage(self, retry_flag):
         """Return current daily/weekly/monthly/yearly power usage."""
         values = self._atome_client.get_consumption(self._period_type)
@@ -606,8 +603,8 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
             # self._period_data.price = round(values["price"], ROUND_PRICE)
 
             if self._period_type == DAILY_PERIOD_TYPE:
-                nb_of_day=1
-                self._compute_period_usage(values,nb_of_day)
+                nb_of_day = 1
+                self._compute_period_usage(values, nb_of_day)
 
             elif self._period_type == WEEKLY_PERIOD_TYPE:
                 ## Compute week in short way
@@ -624,7 +621,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
                     first_week_date = current_date - first_week_day_delta
                     _LOGGER.debug("Beginning weeks %s ", first_week_date)
 
-                self._compute_period_usage(values,current_iso_weekday)
+                self._compute_period_usage(values, current_iso_weekday)
 
             elif self._period_type == MONTHLY_PERIOD_TYPE:
                 ## Compute month in short way
@@ -632,15 +629,13 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
                 current_day = current_date.day
                 if DEBUG_FLAG:
                     _LOGGER.debug(
-                        "Date is %s , DAY number is %s",
-                        current_date,
-                        current_day
+                        "Date is %s , DAY number is %s", current_date, current_day
                     )
-                    first_month_day_delta = timedelta(days=(current_day-1))
+                    first_month_day_delta = timedelta(days=(current_day - 1))
                     first_month_date = current_date - first_month_day_delta
                     _LOGGER.debug("Beginning month %s ", first_month_date)
 
-                self._compute_period_usage(values,current_day)
+                self._compute_period_usage(values, current_day)
 
             else:
                 self._period_data.usage = 0

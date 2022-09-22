@@ -101,6 +101,9 @@ Since release V7.0.0 : implement Total Energies Server API v2.
 Since release V7.1.0 : add local computation for week.
   - as a patch : month, year are set to zero
 
+Since release V7.2.0 : add local computation for month.
+  - as a patch : year are set to zero
+
 </details>
 
 ## Acknowledgments

@@ -30,13 +30,7 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
 )
-from pykeyatome.client import (
-    DAILY_PERIOD_TYPE,
-    MONTHLY_PERIOD_TYPE,
-    WEEKLY_PERIOD_TYPE,
-    YEARLY_PERIOD_TYPE,
-    AtomeClient,
-)
+from pykeyatome.client import AtomeClient
 
 from .const import (
     ATTR_PERIOD_PRICE,
@@ -47,6 +41,7 @@ from .const import (
     ATTRIBUTION,
     CONF_ATOME_LINKY_NUMBER,
     DAILY_NAME_SUFFIX,
+    DAILY_PERIOD_TYPE,
     DAILY_SCAN_INTERVAL,
     DATA_COORDINATOR,
     DEBUG_FLAG,
@@ -64,11 +59,14 @@ from .const import (
     LOGIN_STAT_TYPE,
     MAX_SERVER_ERROR_THRESHOLD,
     MONTHLY_NAME_SUFFIX,
+    MONTHLY_PERIOD_TYPE,
     MONTHLY_SCAN_INTERVAL,
     ROUND_PRICE,
     WEEKLY_NAME_SUFFIX,
+    WEEKLY_PERIOD_TYPE,
     WEEKLY_SCAN_INTERVAL,
     YEARLY_NAME_SUFFIX,
+    YEARLY_PERIOD_TYPE,
     YEARLY_SCAN_INTERVAL,
 )
 

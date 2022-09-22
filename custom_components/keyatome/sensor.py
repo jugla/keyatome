@@ -40,14 +40,15 @@ from pykeyatome.client import (
 
 from .const import (
     ATTR_PERIOD_PRICE,
+    ATTR_PERIOD_REF_DAY,
     ATTR_PREVIOUS_PERIOD_PRICE,
+    ATTR_PREVIOUS_PERIOD_REF_DAY,
     ATTR_PREVIOUS_PERIOD_USAGE,
     ATTRIBUTION,
     CONF_ATOME_LINKY_NUMBER,
     DAILY_NAME_SUFFIX,
     DAILY_SCAN_INTERVAL,
     DATA_COORDINATOR,
-    DAYLY_TRUST_MAX_INTERVAL,
     DEBUG_FLAG,
     DEFAULT_ATOME_LINKY_NUMBER,
     DEFAULT_NAME,
@@ -61,17 +62,14 @@ from .const import (
     LOGIN_STAT_NAME_SUFFIX,
     LOGIN_STAT_SCAN_INTERVAL,
     LOGIN_STAT_TYPE,
-    MAX_PYKEYATOME_RETRY,
+    MAX_SERVER_ERROR_THRESHOLD,
     MONTHLY_NAME_SUFFIX,
     MONTHLY_SCAN_INTERVAL,
-    MONTHLY_TRUST_MAX_INTERVAL,
     ROUND_PRICE,
     WEEKLY_NAME_SUFFIX,
     WEEKLY_SCAN_INTERVAL,
-    WEEKLY_TRUST_MAX_INTERVAL,
     YEARLY_NAME_SUFFIX,
     YEARLY_SCAN_INTERVAL,
-    YEARLY_TRUST_MAX_INTERVAL,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -88,11 +86,17 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 )
 
 
-def format_receive_value(value):
+def format_receive_float_value(value):
     """Format if pb then return None."""
     if value is None or value == STATE_UNKNOWN or value == STATE_UNAVAILABLE:
         return None
     return float(value)
+
+def format_receive_string_value(value):
+    """Format if pb then return None."""
+    if value is None or value == STATE_UNKNOWN or value == STATE_UNAVAILABLE:
+        return None
+    return str(value)
 
 
 async def async_create_period_coordinator(
@@ -196,7 +200,7 @@ async def create_coordinators_and_sensors(
     _LOGGER.debug("login user reference is %s", user_reference)
 
     # count number of error
-    error_counter = Error_Manager(MAX_PYKEYATOME_RETRY)
+    error_counter = Error_Manager()
 
     # Login Stat Data
     login_stat_coordinator = await async_create_login_stat_coordinator(
@@ -361,11 +365,12 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class Error_Manager:
     """Class to count error."""
 
-    def __init__(self, max_error):
+    def __init__(self):
         """Init error class."""
-        self._max_error = max_error
         self._nb_of_cumulated_error = 0
         self._nb_of_cumulated_handled_non_increasing_value = 0
+        ## Threslhold
+        self._max_error = MAX_SERVER_ERROR_THRESHOLD
 
     def increase_error(self, nb_of_error):
         """Increase by nb the cumulative error."""
@@ -522,18 +527,10 @@ class AtomeLiveServerEndPoint(AtomeGenericServerEndPoint):
         """Return current power value."""
         _LOGGER.debug("Live Data : Update Usage")
         self._live_data = AtomeLiveData()
-        ## Remove Below code until DAY becomes availble
-        # if self._error_counter.is_beyond_max_error():
-        #    _LOGGER.warning("too many error Live is not fetched")
-        # else:
-        #    if not self._retrieve_live(False):
-        #        _LOGGER.debug("Perform Reconnect during live request")
-        #        self._atome_client.login()
-        #        self._retrieve_live(True)
         if not self._retrieve_live(False):
-            _LOGGER.debug("Perform Reconnect during live request")
-            self._atome_client.login()
-            self._retrieve_live(True)
+           _LOGGER.debug("Perform Reconnect during live request")
+           self._atome_client.login()
+           self._retrieve_live(True)
         return self._live_data
 
 
@@ -544,6 +541,7 @@ class AtomePeriodData:
         """Initialize the data."""
         self.usage = None
         self.price = None
+        self.ref_day = None
 
 
 class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
@@ -554,7 +552,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         super().__init__(atome_client, name, period_type, error_counter)
         self._period_data = AtomePeriodData()
 
-    def _compute_period_usage(self, values, nb_of_day):
+    def _compute_period_usage(self, values, nb_of_day, ref_day):
         """Return the computation of consumption from today included"""
         current_period_consumption = 0
         current_period_price = 0
@@ -582,6 +580,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
                 _LOGGER.debug("days %s does not exist ", -i)
         self._period_data.usage = current_period_consumption
         self._period_data.price = current_period_price
+        self._period_data.ref_day = ref_day
         _LOGGER.debug(
             "Updating Atome %s data. Got: %f",
             self._period_type,
@@ -596,50 +595,43 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         if (
             values
             is not None
-            # and (values.get("total") is not None)
-            # and (values.get("price") is not None)
         ):
-            # self._period_data.usage = values["total"] / 1000
-            # self._period_data.price = round(values["price"], ROUND_PRICE)
 
             if self._period_type == DAILY_PERIOD_TYPE:
                 nb_of_day = 1
-                self._compute_period_usage(values, nb_of_day)
+                current_date = datetime.fromisoformat(values["data"][-1]["time"])
+                ref_day = current_date
+                self._compute_period_usage(values, nb_of_day, ref_day)
 
             elif self._period_type == WEEKLY_PERIOD_TYPE:
                 ## Compute week in short way
                 current_date = datetime.fromisoformat(values["data"][-1]["time"])
                 current_iso_weekday = datetime.isoweekday(current_date)
-                if DEBUG_FLAG:
-                    current_weekday = datetime.weekday(current_date)
-                    _LOGGER.debug(
-                        "Date is %s , WEEKDAY number is %s",
-                        current_date,
-                        current_weekday,
-                    )
-                    first_week_day_delta = timedelta(days=current_weekday)
-                    first_week_date = current_date - first_week_day_delta
-                    _LOGGER.debug("Beginning weeks %s ", first_week_date)
 
-                self._compute_period_usage(values, current_iso_weekday)
+                current_weekday = datetime.weekday(current_date)
+                first_week_day_delta = timedelta(days=current_weekday)
+                first_week_date = current_date - first_week_day_delta
+                _LOGGER.debug("Beginning weeks %s ", first_week_date)
+
+                ref_day = first_week_date
+                self._compute_period_usage(values, current_iso_weekday, ref_day)
 
             elif self._period_type == MONTHLY_PERIOD_TYPE:
                 ## Compute month in short way
                 current_date = datetime.fromisoformat(values["data"][-1]["time"])
                 current_day = current_date.day
-                if DEBUG_FLAG:
-                    _LOGGER.debug(
-                        "Date is %s , DAY number is %s", current_date, current_day
-                    )
-                    first_month_day_delta = timedelta(days=(current_day - 1))
-                    first_month_date = current_date - first_month_day_delta
-                    _LOGGER.debug("Beginning month %s ", first_month_date)
 
-                self._compute_period_usage(values, current_day)
+                first_month_day_delta = timedelta(days=(current_day - 1))
+                first_month_date = current_date - first_month_day_delta
+                _LOGGER.debug("Beginning month %s ", first_month_date)
+
+                ref_day = first_month_date
+                self._compute_period_usage(values, current_day, ref_day)
 
             else:
                 self._period_data.usage = 0
                 self._period_data.price = 0
+                self._period_data.ref_day = None
                 _LOGGER.debug(
                     "PATCH NOT Updating Atome %s data. Got: %f",
                     self._period_type,
@@ -998,15 +990,21 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
         # restore from previous run
         state_recorded = await self.async_get_last_state()
         if state_recorded:
-            self._period_data.usage = format_receive_value(state_recorded.state)
-            self._period_data.price = format_receive_value(
+            self._period_data.usage = format_receive_float_value(state_recorded.state)
+            self._period_data.price = format_receive_float_value(
                 state_recorded.attributes.get(ATTR_PERIOD_PRICE)
             )
-            self._previous_period_data.usage = format_receive_value(
+            self._period_data.ref_day = format_receive_string_value(
+                state_recorded.attributes.get(ATTR_PERIOD_REF_DAY)
+            )
+            self._previous_period_data.usage = format_receive_float_value(
                 state_recorded.attributes.get(ATTR_PREVIOUS_PERIOD_USAGE)
             )
-            self._previous_period_data.price = format_receive_value(
+            self._previous_period_data.price = format_receive_float_value(
                 state_recorded.attributes.get(ATTR_PREVIOUS_PERIOD_PRICE)
+            )
+            self._previous_period_data.ref_day = format_receive_string_value(
+                state_recorded.attributes.get(ATTR_PREVIOUS_PERIOD_REF_DAY)
             )
             if self._period_data.usage:
                 self._last_valid_period_data = self._period_data
@@ -1017,8 +1015,11 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
         """Return the state attributes of this device."""
         attr = {ATTR_ATTRIBUTION: ATTRIBUTION}
         attr[ATTR_PERIOD_PRICE] = self._period_data.price
+        attr[ATTR_PERIOD_REF_DAY] = self._period_data.ref_day
         attr[ATTR_PREVIOUS_PERIOD_USAGE] = self._previous_period_data.usage
         attr[ATTR_PREVIOUS_PERIOD_PRICE] = self._previous_period_data.price
+        attr[ATTR_PREVIOUS_PERIOD_REF_DAY] = self._previous_period_data.ref_day
+
         return attr
 
     @property
@@ -1030,25 +1031,16 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
         """Fetch new state data for this sensor."""
         _LOGGER.debug("Async Period Update sensor %s", self._name)
         new_period_data = self.coordinator.data
-        # compute value below which it will be a valid reset (decrease)
-        if self._period_type == DAILY_PERIOD_TYPE:
-            period_type_min_margin = DAYLY_TRUST_MAX_INTERVAL
-        elif self._period_type == WEEKLY_PERIOD_TYPE:
-            period_type_min_margin = WEEKLY_TRUST_MAX_INTERVAL
-        elif self._period_type == MONTHLY_PERIOD_TYPE:
-            period_type_min_margin = MONTHLY_TRUST_MAX_INTERVAL
-        else:
-            period_type_min_margin = YEARLY_TRUST_MAX_INTERVAL
 
         # compute consistency
-        if new_period_data.usage and self._last_valid_period_data.usage:
+        if new_period_data.ref_day and self._last_valid_period_data.ref_day:
             _LOGGER.debug(
                 "Check consistecy period %s : New %s ; Current %s",
                 self._name,
                 new_period_data.usage,
                 self._last_valid_period_data.usage,
             )
-            if (new_period_data.usage > period_type_min_margin) and (
+            if (new_period_data.ref_day == self._last_valid_period_data.ref_day) and (
                 (new_period_data.usage < self._last_valid_period_data.usage)
             ):
                 # reset received value : none value
@@ -1060,7 +1052,7 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
                 self._error_counter.reset_handled_non_increasing_value()
 
         # compute last previous data
-        if new_period_data.usage and self._last_valid_period_data.usage:
+        if new_period_data.ref_day and self._last_valid_period_data.ref_day:
             _LOGGER.debug(
                 "Check period %s : New %s ; Current %s",
                 self._name,
@@ -1068,9 +1060,7 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
                 self._last_valid_period_data.usage,
             )
             # Take a margin to avoid storage of previous data
-            if (new_period_data.usage < period_type_min_margin) and (
-                (new_period_data.usage - self._last_valid_period_data.usage) < (-1.0)
-            ):
+            if (new_period_data.ref_day != self._last_valid_period_data.ref_day):
                 _LOGGER.debug(
                     "Previous period %s becomes %s",
                     self._name,
@@ -1078,5 +1068,5 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
                 )
                 self._previous_period_data = self._last_valid_period_data
         self._period_data = new_period_data
-        if new_period_data.usage:
+        if new_period_data.ref_day:
             self._last_valid_period_data = new_period_data

@@ -37,9 +37,8 @@ ATTRIBUTION = "Data provided by TotalEnergies"
 ATTR_PREVIOUS_PERIOD_USAGE = "previous_consumption"
 ATTR_PREVIOUS_PERIOD_PRICE = "previous_price"
 ATTR_PERIOD_PRICE = "price"
-
-# Max number of retry for pykeyatome
-MAX_PYKEYATOME_RETRY = 6
+ATTR_PREVIOUS_PERIOD_REF_DAY = "previous_ref_day"
+ATTR_PERIOD_REF_DAY = "ref_day"
 
 # Scan interval (avoid synchronisation to lower request per seconds on server)
 LOGIN_STAT_SCAN_INTERVAL = timedelta(hours=1, minutes=30, seconds=13)
@@ -49,22 +48,12 @@ WEEKLY_SCAN_INTERVAL = timedelta(hours=1, seconds=5)
 MONTHLY_SCAN_INTERVAL = timedelta(hours=1, seconds=7)
 YEARLY_SCAN_INTERVAL = timedelta(days=1, seconds=11)
 
-# Value used to determine if periodic information are allowed to be reset
-# as Dayly is performed every 5 minutes,
-# the first request can be done with a result below 2kW
-DAYLY_TRUST_MAX_INTERVAL = 2
-# as Weekly/Monthly are performed every hour,
-# the first request can be done with a result below 20kW
-WEEKLY_TRUST_MAX_INTERVAL = 20
-MONTHLY_TRUST_MAX_INTERVAL = 20
-# as Yearly request is performed once a day,
-# the first request can be done with a result below 200kW
-YEARLY_TRUST_MAX_INTERVAL = 200
-
-
 # Type to call py key atome
 LIVE_TYPE = "live"
 LOGIN_STAT_TYPE = "login_stat"
 
 # Round price
 ROUND_PRICE = 2
+
+# max error theshold
+MAX_SERVER_ERROR_THRESHOLD = 5

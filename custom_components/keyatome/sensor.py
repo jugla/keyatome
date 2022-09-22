@@ -90,6 +90,7 @@ def format_receive_float_value(value):
         return None
     return float(value)
 
+
 def format_receive_string_value(value):
     """Format if pb then return None."""
     if value is None or value == STATE_UNKNOWN or value == STATE_UNAVAILABLE:
@@ -526,9 +527,9 @@ class AtomeLiveServerEndPoint(AtomeGenericServerEndPoint):
         _LOGGER.debug("Live Data : Update Usage")
         self._live_data = AtomeLiveData()
         if not self._retrieve_live(False):
-           _LOGGER.debug("Perform Reconnect during live request")
-           self._atome_client.login()
-           self._retrieve_live(True)
+            _LOGGER.debug("Perform Reconnect during live request")
+            self._atome_client.login()
+            self._retrieve_live(True)
         return self._live_data
 
 
@@ -590,10 +591,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         values = self._atome_client.get_consumption(self._period_type)
         # dump
         _LOGGER.debug("%s : DUMP value: %s", self._period_type, values)
-        if (
-            values
-            is not None
-        ):
+        if values is not None:
 
             if self._period_type == DAILY_PERIOD_TYPE:
                 nb_of_day = 1
@@ -1058,7 +1056,7 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
                 self._last_valid_period_data.usage,
             )
             # Take a margin to avoid storage of previous data
-            if (new_period_data.ref_day != self._last_valid_period_data.ref_day):
+            if new_period_data.ref_day != self._last_valid_period_data.ref_day:
                 _LOGGER.debug(
                     "Previous period %s becomes %s",
                     self._name,

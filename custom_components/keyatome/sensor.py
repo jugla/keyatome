@@ -65,9 +65,6 @@ from .const import (
     WEEKLY_NAME_SUFFIX,
     WEEKLY_PERIOD_TYPE,
     WEEKLY_SCAN_INTERVAL,
-    YEARLY_NAME_SUFFIX,
-    YEARLY_PERIOD_TYPE,
-    YEARLY_SCAN_INTERVAL,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -181,7 +178,6 @@ async def create_coordinators_and_sensors(
     daily_sensor_name = sensor_root_name_linky + DAILY_NAME_SUFFIX
     monthly_sensor_name = sensor_root_name_linky + MONTHLY_NAME_SUFFIX
     weekly_sensor_name = sensor_root_name_linky + WEEKLY_NAME_SUFFIX
-    yearly_sensor_name = sensor_root_name_linky + YEARLY_NAME_SUFFIX
     diagnostic_sensor_name = sensor_root_name_linky + DIAGNOSTIC_NAME_SUFFIX
 
     # Create name for device
@@ -234,14 +230,6 @@ async def create_coordinators_and_sensors(
         monthly_sensor_name,
         MONTHLY_PERIOD_TYPE,
         MONTHLY_SCAN_INTERVAL,
-        error_counter,
-    )
-    yearly_coordinator = await async_create_period_coordinator(
-        hass,
-        atome_client,
-        yearly_sensor_name,
-        YEARLY_PERIOD_TYPE,
-        YEARLY_SCAN_INTERVAL,
         error_counter,
     )
 
@@ -302,17 +290,6 @@ async def create_coordinators_and_sensors(
     )
     sensors.append(atome_monhtly_sensor)
     sensors_to_follow.append(atome_monhtly_sensor.give_name_and_unique_id())
-
-    atome_yearly_sensor = AtomePeriodSensor(
-        yearly_coordinator,
-        yearly_sensor_name,
-        user_reference,
-        atome_device_name,
-        YEARLY_PERIOD_TYPE,
-        error_counter,
-    )
-    sensors.append(atome_yearly_sensor)
-    sensors_to_follow.append(atome_yearly_sensor.give_name_and_unique_id())
 
     atome_diagnostic = AtomeDiagnostic(
         diagnostic_sensor_name,
@@ -588,7 +565,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
 
     def _retrieve_period_usage(self, retry_flag):
         """Return current daily/weekly/monthly/yearly power usage."""
-        values = self._atome_client.get_consumption(self._period_type)
+        values = self._atome_client.get_consumption()
         # dump
         _LOGGER.debug("%s : DUMP value: %s", self._period_type, values)
         if values is not None:
@@ -625,6 +602,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
                 self._compute_period_usage(values, current_day, ref_day)
 
             else:
+                # Unexpected case
                 self._period_data.usage = 0
                 self._period_data.price = 0
                 self._period_data.ref_day = None

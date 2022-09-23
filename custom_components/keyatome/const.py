@@ -23,7 +23,6 @@ LIVE_NAME_SUFFIX = " Live Power"
 DAILY_NAME_SUFFIX = " Daily"
 WEEKLY_NAME_SUFFIX = " Weekly"
 MONTHLY_NAME_SUFFIX = " Monthly"
-YEARLY_NAME_SUFFIX = " Yearly"
 DIAGNOSTIC_NAME_SUFFIX = "_Diagnostic"
 
 # device name
@@ -46,7 +45,6 @@ LIVE_SCAN_INTERVAL = timedelta(seconds=30)
 DAILY_SCAN_INTERVAL = timedelta(minutes=5, seconds=3)
 WEEKLY_SCAN_INTERVAL = timedelta(hours=1, seconds=5)
 MONTHLY_SCAN_INTERVAL = timedelta(hours=1, seconds=7)
-YEARLY_SCAN_INTERVAL = timedelta(days=1, seconds=11)
 
 # Type to call py key atome
 LIVE_TYPE = "live"
@@ -57,3 +55,9 @@ ROUND_PRICE = 2
 
 # max error theshold
 MAX_SERVER_ERROR_THRESHOLD = 5
+
+# export const
+DAILY_PERIOD_TYPE = "day"
+WEEKLY_PERIOD_TYPE = "week"
+MONTHLY_PERIOD_TYPE = "month"
+

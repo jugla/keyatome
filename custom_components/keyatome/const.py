@@ -24,6 +24,8 @@ DAILY_NAME_SUFFIX = " Daily"
 WEEKLY_NAME_SUFFIX = " Weekly"
 MONTHLY_NAME_SUFFIX = " Monthly"
 DIAGNOSTIC_NAME_SUFFIX = "_Diagnostic"
+# period name
+PERIOD_NAME_SUFFIX = "_Period"
 
 # device name
 DEVICE_NAME_SUFFIX = " Device"
@@ -42,13 +44,12 @@ ATTR_PERIOD_REF_DAY = "ref_day"
 # Scan interval (avoid synchronisation to lower request per seconds on server)
 LOGIN_STAT_SCAN_INTERVAL = timedelta(hours=1, minutes=30, seconds=13)
 LIVE_SCAN_INTERVAL = timedelta(seconds=30)
-DAILY_SCAN_INTERVAL = timedelta(minutes=5, seconds=3)
-WEEKLY_SCAN_INTERVAL = timedelta(hours=1, seconds=5)
-MONTHLY_SCAN_INTERVAL = timedelta(hours=1, seconds=7)
+PERIOD_SCAN_INTERVAL = timedelta(minutes=5, seconds=3)
 
 # Type to call py key atome
 LIVE_TYPE = "live"
 LOGIN_STAT_TYPE = "login_stat"
+PERIOD_CONSUMPTION_TYPE = "period_consumption"
 
 # Round price
 ROUND_PRICE = 2

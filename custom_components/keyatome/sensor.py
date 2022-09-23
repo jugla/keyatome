@@ -42,7 +42,6 @@ from .const import (
     CONF_ATOME_LINKY_NUMBER,
     DAILY_NAME_SUFFIX,
     DAILY_PERIOD_TYPE,
-    DAILY_SCAN_INTERVAL,
     DATA_COORDINATOR,
     DEBUG_FLAG,
     DEFAULT_ATOME_LINKY_NUMBER,
@@ -60,11 +59,12 @@ from .const import (
     MAX_SERVER_ERROR_THRESHOLD,
     MONTHLY_NAME_SUFFIX,
     MONTHLY_PERIOD_TYPE,
-    MONTHLY_SCAN_INTERVAL,
+    PERIOD_CONSUMPTION_TYPE,
+    PERIOD_NAME_SUFFIX,
+    PERIOD_SCAN_INTERVAL,
     ROUND_PRICE,
     WEEKLY_NAME_SUFFIX,
     WEEKLY_PERIOD_TYPE,
-    WEEKLY_SCAN_INTERVAL,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -96,12 +96,10 @@ def format_receive_string_value(value):
 
 
 async def async_create_period_coordinator(
-    hass, atome_client, name, sensor_type, scan_interval, error_counter
+    hass, atome_client, name, scan_interval, error_counter
 ):
     """Create coordinator for period data."""
-    atome_period_end_point = AtomePeriodServerEndPoint(
-        atome_client, name, sensor_type, error_counter
-    )
+    atome_period_end_point = AtomePeriodServerEndPoint(atome_client, name, error_counter)
 
     async def async_period_update_data():
         data = await hass.async_add_executor_job(atome_period_end_point.retrieve_data)
@@ -180,6 +178,9 @@ async def create_coordinators_and_sensors(
     weekly_sensor_name = sensor_root_name_linky + WEEKLY_NAME_SUFFIX
     diagnostic_sensor_name = sensor_root_name_linky + DIAGNOSTIC_NAME_SUFFIX
 
+    # name of coordinator
+    period_sensor_name = sensor_root_name_linky + PERIOD_NAME_SUFFIX
+
     # Create name for device
     atome_device_name = sensor_root_name_linky + DEVICE_NAME_SUFFIX
 
@@ -208,28 +209,11 @@ async def create_coordinators_and_sensors(
     )
 
     # Periodic Data
-    daily_coordinator = await async_create_period_coordinator(
+    period_coordinator = await async_create_period_coordinator(
         hass,
         atome_client,
-        daily_sensor_name,
-        DAILY_PERIOD_TYPE,
-        DAILY_SCAN_INTERVAL,
-        error_counter,
-    )
-    weekly_coordinator = await async_create_period_coordinator(
-        hass,
-        atome_client,
-        weekly_sensor_name,
-        WEEKLY_PERIOD_TYPE,
-        WEEKLY_SCAN_INTERVAL,
-        error_counter,
-    )
-    monthly_coordinator = await async_create_period_coordinator(
-        hass,
-        atome_client,
-        monthly_sensor_name,
-        MONTHLY_PERIOD_TYPE,
-        MONTHLY_SCAN_INTERVAL,
+        period_sensor_name,
+        PERIOD_SCAN_INTERVAL,
         error_counter,
     )
 
@@ -259,7 +243,7 @@ async def create_coordinators_and_sensors(
     sensors_to_follow.append(atome_live_sensor.give_name_and_unique_id())
 
     atome_daily_sensor = AtomePeriodSensor(
-        daily_coordinator,
+        period_coordinator,
         daily_sensor_name,
         user_reference,
         atome_device_name,
@@ -270,7 +254,7 @@ async def create_coordinators_and_sensors(
     sensors_to_follow.append(atome_daily_sensor.give_name_and_unique_id())
 
     atome_weekly_sensor = AtomePeriodSensor(
-        weekly_coordinator,
+        period_coordinator,
         weekly_sensor_name,
         user_reference,
         atome_device_name,
@@ -281,7 +265,7 @@ async def create_coordinators_and_sensors(
     sensors_to_follow.append(atome_weekly_sensor.give_name_and_unique_id())
 
     atome_monhtly_sensor = AtomePeriodSensor(
-        monthly_coordinator,
+        period_coordinator,
         monthly_sensor_name,
         user_reference,
         atome_device_name,
@@ -519,16 +503,26 @@ class AtomePeriodData:
         self.price = None
         self.ref_day = None
 
+class AtomeAllPeriodData:
+    """Class used to store period Data."""
+
+    def __init__(self):
+        """Initialize the data."""
+        self.all_period = {}
+        self.all_period[DAILY_PERIOD_TYPE] = AtomePeriodData()
+        self.all_period[WEEKLY_PERIOD_TYPE] = AtomePeriodData()
+        self.all_period[MONTHLY_PERIOD_TYPE] = AtomePeriodData()
+
 
 class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
     """Class used to retrieve Period Data."""
 
-    def __init__(self, atome_client, name, period_type, error_counter):
+    def __init__(self, atome_client, name, error_counter):
         """Initialize the data."""
-        super().__init__(atome_client, name, period_type, error_counter)
-        self._period_data = AtomePeriodData()
+        super().__init__(atome_client, name, PERIOD_CONSUMPTION_TYPE, error_counter)
+        self._periods_data = AtomeAllPeriodData()
 
-    def _compute_period_usage(self, values, nb_of_day, ref_day):
+    def _compute_period_usage(self, values, nb_of_day, ref_day, period_type):
         """Return the computation of consumption from today included"""
         current_period_consumption = 0
         current_period_price = 0
@@ -554,13 +548,13 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
                     )
             except:
                 _LOGGER.debug("days %s does not exist ", -i)
-        self._period_data.usage = current_period_consumption
-        self._period_data.price = current_period_price
-        self._period_data.ref_day = ref_day
+        self._periods_data.all_period[period_type].usage = current_period_consumption
+        self._periods_data.all_period[period_type].price = current_period_price
+        self._periods_data.all_period[period_type].ref_day = ref_day
         _LOGGER.debug(
             "Updating Atome %s data. Got: %f",
-            self._period_type,
-            self._period_data.usage,
+            period_type,
+            self._periods_data.all_period[period_type].usage,
         )
 
     def _retrieve_period_usage(self, retry_flag):
@@ -570,47 +564,35 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         _LOGGER.debug("%s : DUMP value: %s", self._period_type, values)
         if values is not None:
 
-            if self._period_type == DAILY_PERIOD_TYPE:
-                nb_of_day = 1
-                current_date = datetime.fromisoformat(values["data"][-1]["time"])
-                ref_day = current_date
-                self._compute_period_usage(values, nb_of_day, ref_day)
+            # compute DAY
+            nb_of_day = 1
+            current_date = datetime.fromisoformat(values["data"][-1]["time"])
+            ref_day = current_date
+            self._compute_period_usage(values, nb_of_day, ref_day, DAILY_PERIOD_TYPE)
 
-            elif self._period_type == WEEKLY_PERIOD_TYPE:
-                ## Compute week in short way
-                current_date = datetime.fromisoformat(values["data"][-1]["time"])
-                current_iso_weekday = datetime.isoweekday(current_date)
+            # compute week
+            current_date = datetime.fromisoformat(values["data"][-1]["time"])
+            current_iso_weekday = datetime.isoweekday(current_date)
 
-                current_weekday = datetime.weekday(current_date)
-                first_week_day_delta = timedelta(days=current_weekday)
-                first_week_date = current_date - first_week_day_delta
-                _LOGGER.debug("Beginning weeks %s ", first_week_date)
+            current_weekday = datetime.weekday(current_date)
+            first_week_day_delta = timedelta(days=current_weekday)
+            first_week_date = current_date - first_week_day_delta
+            _LOGGER.debug("Beginning weeks %s ", first_week_date)
 
-                ref_day = first_week_date
-                self._compute_period_usage(values, current_iso_weekday, ref_day)
+            ref_day = first_week_date
+            self._compute_period_usage(values, current_iso_weekday, ref_day, WEEKLY_PERIOD_TYPE)
 
-            elif self._period_type == MONTHLY_PERIOD_TYPE:
-                ## Compute month in short way
-                current_date = datetime.fromisoformat(values["data"][-1]["time"])
-                current_day = current_date.day
+            # compute month
+            current_date = datetime.fromisoformat(values["data"][-1]["time"])
+            current_day = current_date.day
 
-                first_month_day_delta = timedelta(days=(current_day - 1))
-                first_month_date = current_date - first_month_day_delta
-                _LOGGER.debug("Beginning month %s ", first_month_date)
+            first_month_day_delta = timedelta(days=(current_day - 1))
+            first_month_date = current_date - first_month_day_delta
+            _LOGGER.debug("Beginning month %s ", first_month_date)
 
-                ref_day = first_month_date
-                self._compute_period_usage(values, current_day, ref_day)
+            ref_day = first_month_date
+            self._compute_period_usage(values, current_day, ref_day, MONTHLY_PERIOD_TYPE)
 
-            else:
-                # Unexpected case
-                self._period_data.usage = 0
-                self._period_data.price = 0
-                self._period_data.ref_day = None
-                _LOGGER.debug(
-                    "PATCH NOT Updating Atome %s data. Got: %f",
-                    self._period_type,
-                    self._period_data.usage,
-                )
             # reset error
             self._error_counter.reset_error()
             return True
@@ -629,12 +611,12 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
 
     def retrieve_data(self):
         """Return current daily/weekly/monthly/yearly power usage with one retry."""
-        self._period_data = AtomePeriodData()
+        self._periods_data = AtomeAllPeriodData()
         if not self._retrieve_period_usage(False):
-            _LOGGER.debug("Perform Reconnect during %s", self._period_type)
+            _LOGGER.debug("Perform Reconnect during %s")
             self._atome_client.login()
             self._retrieve_period_usage(True)
-        return self._period_data
+        return self._periods_data
 
 
 class AtomeDeviceInfo:
@@ -1004,7 +986,7 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
     def update_from_latest_data(self):
         """Fetch new state data for this sensor."""
         _LOGGER.debug("Async Period Update sensor %s", self._name)
-        new_period_data = self.coordinator.data
+        new_period_data = self.coordinator.data.all_period[self._period_type]
 
         # compute consistency
         if new_period_data.ref_day and self._last_valid_period_data.ref_day:

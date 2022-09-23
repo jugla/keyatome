@@ -88,11 +88,11 @@ def format_receive_float_value(value):
     return float(value)
 
 
-def format_receive_string_value(value):
+def format_receive_date_value(value):
     """Format if pb then return None."""
     if value is None or value == STATE_UNKNOWN or value == STATE_UNAVAILABLE:
         return None
-    return str(value)
+    return datetime.fromisoformat(value)
 
 
 async def async_create_period_coordinator(
@@ -950,7 +950,7 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
             self._period_data.price = format_receive_float_value(
                 state_recorded.attributes.get(ATTR_PERIOD_PRICE)
             )
-            self._period_data.ref_day = format_receive_string_value(
+            self._period_data.ref_day = format_receive_date_value(
                 state_recorded.attributes.get(ATTR_PERIOD_REF_DAY)
             )
             self._previous_period_data.usage = format_receive_float_value(
@@ -959,7 +959,7 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
             self._previous_period_data.price = format_receive_float_value(
                 state_recorded.attributes.get(ATTR_PREVIOUS_PERIOD_PRICE)
             )
-            self._previous_period_data.ref_day = format_receive_string_value(
+            self._previous_period_data.ref_day = format_receive_date_value(
                 state_recorded.attributes.get(ATTR_PREVIOUS_PERIOD_REF_DAY)
             )
             if self._period_data.usage:
@@ -1016,7 +1016,8 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
                 self._last_valid_period_data.usage,
             )
             # Take a margin to avoid storage of previous data
-            if new_period_data.ref_day != self._last_valid_period_data.ref_day:
+            diff_period_day = new_period_data.ref_day - self._last_valid_period_data.ref_day
+            if diff_period_day > timedelta(seconds=1) :
                 _LOGGER.debug(
                     "Previous period %s becomes %s",
                     self._name,

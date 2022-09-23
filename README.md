@@ -103,6 +103,8 @@ Since release V7.1.0 : add local computation for week.
 
 Since release V7.2.0 : add local computation for month.
   - as a patch : year are set to zero
+  
+Since release V7.3.0 : year sensor is removed
 
 </details>
 

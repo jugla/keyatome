@@ -99,7 +99,9 @@ async def async_create_period_coordinator(
     hass, atome_client, name, scan_interval, error_counter
 ):
     """Create coordinator for period data."""
-    atome_period_end_point = AtomePeriodServerEndPoint(atome_client, name, error_counter)
+    atome_period_end_point = AtomePeriodServerEndPoint(
+        atome_client, name, error_counter
+    )
 
     async def async_period_update_data():
         data = await hass.async_add_executor_job(atome_period_end_point.retrieve_data)
@@ -503,6 +505,7 @@ class AtomePeriodData:
         self.price = None
         self.ref_day = None
 
+
 class AtomeAllPeriodData:
     """Class used to store period Data."""
 
@@ -580,7 +583,9 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
             _LOGGER.debug("Beginning weeks %s ", first_week_date)
 
             ref_day = first_week_date
-            self._compute_period_usage(values, current_iso_weekday, ref_day, WEEKLY_PERIOD_TYPE)
+            self._compute_period_usage(
+                values, current_iso_weekday, ref_day, WEEKLY_PERIOD_TYPE
+            )
 
             # compute month
             current_date = datetime.fromisoformat(values["data"][-1]["time"])
@@ -591,7 +596,9 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
             _LOGGER.debug("Beginning month %s ", first_month_date)
 
             ref_day = first_month_date
-            self._compute_period_usage(values, current_day, ref_day, MONTHLY_PERIOD_TYPE)
+            self._compute_period_usage(
+                values, current_day, ref_day, MONTHLY_PERIOD_TYPE
+            )
 
             # reset error
             self._error_counter.reset_error()

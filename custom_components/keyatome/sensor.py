@@ -570,7 +570,9 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
     def _retrieve_period_usage(self, retry_flag):
         """Return current daily/weekly/monthly/yearly power usage."""
         retrieve_values = self._atome_client.get_consumption()
-        _LOGGER.debug("%s : DUMP retrieve value: %s", self._period_type, retrieve_values)
+        _LOGGER.debug(
+            "%s : DUMP retrieve value: %s", self._period_type, retrieve_values
+        )
 
         ####### MAKE ROBUSTNESS
         # make value robust
@@ -583,21 +585,30 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
             self._robust_values = self._current_values
             if self._former_values is not None:
                 # compare values
-                if self._former_values["data"][-1]["time"] == self._current_values["data"][-1]["time"]:
+                if (
+                    self._former_values["data"][-1]["time"]
+                    == self._current_values["data"][-1]["time"]
+                ):
                     shift_ref_day = 0
                 else:
                     shift_ref_day = 1
-                for i in range(1, (len(self._current_values["data"])+1)-shift_ref_day, 1):
+                for i in range(
+                    1, (len(self._current_values["data"]) + 1) - shift_ref_day, 1
+                ):
                     former_value = self._former_values["data"][-i]["totalConsumption"]
-                    new_value = self._current_values["data"][-i-shift_ref_day]["totalConsumption"]
+                    new_value = self._current_values["data"][-i - shift_ref_day][
+                        "totalConsumption"
+                    ]
                     if new_value < former_value:
-                       _LOGGER.debug(
-                           "%s : PATCH retrieve value: (new) %s by (former) %s",
-                           self._period_type,
-                           self._current_values["data"][-i-shift_ref_day],
-                           self._former_values["data"][-i],
-                       )
-                       self._robust_values["data"][-i-shift_ref_day] = self._former_values["data"][-i]
+                        _LOGGER.debug(
+                            "%s : PATCH retrieve value: (new) %s by (former) %s",
+                            self._period_type,
+                            self._current_values["data"][-i - shift_ref_day],
+                            self._former_values["data"][-i],
+                        )
+                        self._robust_values["data"][
+                            -i - shift_ref_day
+                        ] = self._former_values["data"][-i]
                 # patch also former value
             values = self._robust_values
             self._former_values = self._robust_values

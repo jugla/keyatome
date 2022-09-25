@@ -583,6 +583,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
 
             self._current_values = retrieve_values
             self._robust_values = self._current_values
+            perform_patch = False
             if self._former_values is not None:
                 # compare values
                 if (
@@ -600,6 +601,8 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
                         "totalConsumption"
                     ]
                     if new_value < former_value:
+                        self._error_counter.increase_handled_non_increasing_value(1)
+                        perform_patch = True
                         _LOGGER.debug(
                             "%s : PATCH retrieve value: (new) %s by (former) %s",
                             self._period_type,
@@ -609,7 +612,10 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
                         self._robust_values["data"][
                             -i - shift_ref_day
                         ] = self._former_values["data"][-i]
-                # patch also former value
+                # reset decreasing error if needed
+                if not perform_patch:
+                    self._error_counter.reset_handled_non_increasing_value()
+            # patch also former value
             values = self._robust_values
             self._former_values = self._robust_values
 
@@ -1045,25 +1051,6 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
         """Fetch new state data for this sensor."""
         _LOGGER.debug("Async Period Update sensor %s", self._name)
         new_period_data = self.coordinator.data.all_period[self._period_type]
-
-        # compute consistency
-        if new_period_data.ref_day and self._last_valid_period_data.ref_day:
-            _LOGGER.debug(
-                "Check consistecy period %s : New %s ; Current %s",
-                self._name,
-                new_period_data.usage,
-                self._last_valid_period_data.usage,
-            )
-            if (new_period_data.ref_day == self._last_valid_period_data.ref_day) and (
-                (new_period_data.usage < self._last_valid_period_data.usage)
-            ):
-                # reset received value : none value
-                new_period_data = AtomePeriodData()
-                _LOGGER.error("Period are strictly increasing except reset to zero")
-                # increase error by 1
-                self._error_counter.increase_handled_non_increasing_value(1)
-            else:
-                self._error_counter.reset_handled_non_increasing_value()
 
         # compute last previous data
         if new_period_data.ref_day and self._last_valid_period_data.ref_day:

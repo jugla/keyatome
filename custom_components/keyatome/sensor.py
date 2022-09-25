@@ -549,10 +549,11 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
                         (values["data"][-i]["consumption"]["bill1"]),
                         ROUND_PRICE,
                     )
-                _LOGGER.debug("%s : DETAILED value %s: %s", period_type, i, values["data"][-i])
+                _LOGGER.debug(
+                    "%s : DETAILED value %s: %s", period_type, i, values["data"][-i]
+                )
             except:
                 _LOGGER.debug("days %s does not exist ", -i)
-
 
         self._periods_data.all_period[period_type].usage = current_period_consumption
         self._periods_data.all_period[period_type].price = current_period_price
@@ -1026,8 +1027,10 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
                 self._last_valid_period_data.usage,
             )
             # Take a margin to avoid storage of previous data
-            diff_period_day = new_period_data.ref_day - self._last_valid_period_data.ref_day
-            if diff_period_day > timedelta(seconds=1) :
+            diff_period_day = (
+                new_period_data.ref_day - self._last_valid_period_data.ref_day
+            )
+            if diff_period_day > timedelta(seconds=1):
                 _LOGGER.debug(
                     "Previous period %s becomes %s",
                     self._name,

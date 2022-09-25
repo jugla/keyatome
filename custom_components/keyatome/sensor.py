@@ -524,6 +524,9 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         """Initialize the data."""
         super().__init__(atome_client, name, PERIOD_CONSUMPTION_TYPE, error_counter)
         self._periods_data = AtomeAllPeriodData()
+        self._former_values = None
+        self._current_values = None
+        self._robust_values = None
 
     def _compute_period_usage(self, values, nb_of_day, ref_day, period_type):
         """Return the computation of consumption from today included"""
@@ -566,7 +569,40 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
 
     def _retrieve_period_usage(self, retry_flag):
         """Return current daily/weekly/monthly/yearly power usage."""
-        values = self._atome_client.get_consumption()
+        retrieve_values = self._atome_client.get_consumption()
+        _LOGGER.debug("%s : DUMP retrieve value: %s", self._period_type, retrieve_values)
+
+        ####### MAKE ROBUSTNESS
+        # make value robust
+        if retrieve_values is None:
+            # set to None
+            values = retrieve_values
+        else:
+
+            self._current_values = retrieve_values
+            self._robust_values = self._current_values
+            if self._former_values is not None:
+                # compare values
+                if self._former_values["data"][-1]["time"] == self._current_values["data"][-1]["time"]:
+                    shift_ref_day = 0
+                else:
+                    shift_ref_day = 1
+                for i in range(1, (len(self._current_values["data"])+1)-shift_ref_day, 1):
+                    former_value = self._former_values["data"][-i]["totalConsumption"]
+                    new_value = self._current_values["data"][-i-shift_ref_day]["totalConsumption"]
+                    if new_value < former_value:
+                       _LOGGER.debug(
+                           "%s : PATCH retrieve value: (new) %s by (former) %s",
+                           self._period_type,
+                           self._current_values["data"][-i-shift_ref_day],
+                           self._former_values["data"][-i],
+                       )
+                       self._robust_values["data"][-i-shift_ref_day] = self._former_values["data"][-i]
+                # patch also former value
+            values = self._robust_values
+            self._former_values = self._robust_values
+
+        ###### PERFORM NORMAL COMPUTATION
         # dump
         _LOGGER.debug("%s : DUMP value: %s", self._period_type, values)
         if values is not None:

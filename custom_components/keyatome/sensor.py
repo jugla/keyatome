@@ -569,6 +569,11 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
 
     def _retrieve_period_usage(self, retry_flag):
         """Return current daily/weekly/monthly/yearly power usage."""
+        Error_In_Data = False
+        Error_In_Data2 = False
+        perform_patch = False
+        perform_day_patch = False
+
         retrieve_values = self._atome_client.get_consumption()
         _LOGGER.debug(
             "%s : DUMP retrieve value: %s", self._period_type, retrieve_values
@@ -583,83 +588,118 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
 
             self._current_values = retrieve_values
             self._robust_values = self._current_values
-            perform_patch = False
             if self._former_values is not None:
-                # compare values
-                if (
-                    self._former_values["data"][-1]["time"]
-                    == self._current_values["data"][-1]["time"]
-                ):
-                    shift_ref_day = 0
-                else:
-                    shift_ref_day = 1
-                for i in range(
-                    1, (len(self._current_values["data"]) + 1) - shift_ref_day, 1
-                ):
-                    former_value = self._former_values["data"][-i]["totalConsumption"]
-                    new_value = self._current_values["data"][-i - shift_ref_day][
-                        "totalConsumption"
-                    ]
-                    if new_value < former_value:
-                        self._error_counter.increase_handled_non_increasing_value(1)
-                        perform_patch = True
-                        _LOGGER.debug(
-                            "%s : PATCH retrieve value: (new) %s by (former) %s",
-                            self._period_type,
-                            self._current_values["data"][-i - shift_ref_day],
-                            self._former_values["data"][-i],
-                        )
-                        self._robust_values["data"][
-                            -i - shift_ref_day
-                        ] = self._former_values["data"][-i]
+                try:
+
+                    # compare values
+                    if (
+                        self._former_values["data"][-1]["time"]
+                        == self._current_values["data"][-1]["time"]
+                    ):
+                        shift_ref_day = 0
+                    else:
+                        shift_ref_day = 1
+                    for i in range(
+                        1, (len(self._current_values["data"]) + 1) - shift_ref_day, 1
+                    ):
+                        former_value = self._former_values["data"][-i][
+                            "totalConsumption"
+                        ]
+                        new_value = self._current_values["data"][-i - shift_ref_day][
+                            "totalConsumption"
+                        ]
+                        if new_value < former_value:
+                            if i == 1 and shift_ref_day == 0:
+                                # Raise error only if day is not increaing
+                                perform_day_patch = True
+                                self._error_counter.increase_handled_non_increasing_value(
+                                    1
+                                )
+                            perform_patch = True
+                            _LOGGER.debug(
+                                "%s : PATCH retrieve value: (new) %s by (former) %s",
+                                self._period_type,
+                                self._current_values["data"][-i - shift_ref_day],
+                                self._former_values["data"][-i],
+                            )
+                            self._robust_values["data"][
+                                -i - shift_ref_day
+                            ] = self._former_values["data"][-i]
+                except:
+                    Error_In_Data = True
+                    # do as if nothing done
+                    perform_patch = False
+                    perform_day_patch = False
+                    self._robust_values = self._current_values
                 # reset decreasing error if needed
-                if not perform_patch:
+                if not perform_day_patch:
+                    # show error only for day
                     self._error_counter.reset_handled_non_increasing_value()
             # patch also former value
             values = self._robust_values
             self._former_values = self._robust_values
+
+        ##### IF ERROR END Computation
+        if Error_In_Data:
+            # even if warning count for 1
+            self._error_counter.increase_error(1)
+            if retry_flag:
+                _LOGGER.error(
+                    "%s : Missing total value in values: %s", self._period_type, values
+                )
+            else:
+                _LOGGER.warning(
+                    "%s : Missing total value in values: %s", self._period_type, values
+                )
+            return False
 
         ###### PERFORM NORMAL COMPUTATION
         # dump
         _LOGGER.debug("%s : DUMP value: %s", self._period_type, values)
         if values is not None:
 
-            # compute DAY
-            nb_of_day = 1
-            current_date = datetime.fromisoformat(values["data"][-1]["time"])
-            ref_day = current_date
-            self._compute_period_usage(values, nb_of_day, ref_day, DAILY_PERIOD_TYPE)
+            try:
+                current_date = datetime.fromisoformat(values["data"][-1]["time"])
+            except:
+                Error_In_Data2 = True
 
-            # compute week
-            current_date = datetime.fromisoformat(values["data"][-1]["time"])
-            current_iso_weekday = datetime.isoweekday(current_date)
+            if not Error_In_Data2:
 
-            current_weekday = datetime.weekday(current_date)
-            first_week_day_delta = timedelta(days=current_weekday)
-            first_week_date = current_date - first_week_day_delta
-            _LOGGER.debug("Beginning weeks %s ", first_week_date)
+                # compute DAY
+                nb_of_day = 1
+                ref_day = current_date
+                self._compute_period_usage(
+                    values, nb_of_day, ref_day, DAILY_PERIOD_TYPE
+                )
 
-            ref_day = first_week_date
-            self._compute_period_usage(
-                values, current_iso_weekday, ref_day, WEEKLY_PERIOD_TYPE
-            )
+                # compute week
+                current_iso_weekday = datetime.isoweekday(current_date)
 
-            # compute month
-            current_date = datetime.fromisoformat(values["data"][-1]["time"])
-            current_day = current_date.day
+                current_weekday = datetime.weekday(current_date)
+                first_week_day_delta = timedelta(days=current_weekday)
+                first_week_date = current_date - first_week_day_delta
+                _LOGGER.debug("Beginning weeks %s ", first_week_date)
 
-            first_month_day_delta = timedelta(days=(current_day - 1))
-            first_month_date = current_date - first_month_day_delta
-            _LOGGER.debug("Beginning month %s ", first_month_date)
+                ref_day = first_week_date
+                self._compute_period_usage(
+                    values, current_iso_weekday, ref_day, WEEKLY_PERIOD_TYPE
+                )
 
-            ref_day = first_month_date
-            self._compute_period_usage(
-                values, current_day, ref_day, MONTHLY_PERIOD_TYPE
-            )
+                # compute month
+                current_day = current_date.day
 
-            # reset error
-            self._error_counter.reset_error()
-            return True
+                first_month_day_delta = timedelta(days=(current_day - 1))
+                first_month_date = current_date - first_month_day_delta
+                _LOGGER.debug("Beginning month %s ", first_month_date)
+
+                ref_day = first_month_date
+                self._compute_period_usage(
+                    values, current_day, ref_day, MONTHLY_PERIOD_TYPE
+                )
+
+                # reset error
+                self._error_counter.reset_error()
+                return True
 
         # even if warning count for 1
         self._error_counter.increase_error(1)

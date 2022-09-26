@@ -574,7 +574,6 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         perform_patch = False
         perform_day_patch = False
 
-
         retrieve_values = self._atome_client.get_consumption()
         _LOGGER.debug(
             "%s : DUMP retrieve value: %s", self._period_type, retrieve_values
@@ -603,15 +602,19 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
                     for i in range(
                         1, (len(self._current_values["data"]) + 1) - shift_ref_day, 1
                     ):
-                        former_value = self._former_values["data"][-i]["totalConsumption"]
+                        former_value = self._former_values["data"][-i][
+                            "totalConsumption"
+                        ]
                         new_value = self._current_values["data"][-i - shift_ref_day][
                             "totalConsumption"
                         ]
                         if new_value < former_value:
                             if i == 1 and shift_ref_day == 0:
-                               # Raise error only if day is not increaing
-                               perform_day_patch = True
-                               self._error_counter.increase_handled_non_increasing_value(1)
+                                # Raise error only if day is not increaing
+                                perform_day_patch = True
+                                self._error_counter.increase_handled_non_increasing_value(
+                                    1
+                                )
                             perform_patch = True
                             _LOGGER.debug(
                                 "%s : PATCH retrieve value: (new) %s by (former) %s",
@@ -650,7 +653,6 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
                 )
             return False
 
-
         ###### PERFORM NORMAL COMPUTATION
         # dump
         _LOGGER.debug("%s : DUMP value: %s", self._period_type, values)
@@ -666,7 +668,9 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
                 # compute DAY
                 nb_of_day = 1
                 ref_day = current_date
-                self._compute_period_usage(values, nb_of_day, ref_day, DAILY_PERIOD_TYPE)
+                self._compute_period_usage(
+                    values, nb_of_day, ref_day, DAILY_PERIOD_TYPE
+                )
 
                 # compute week
                 current_iso_weekday = datetime.isoweekday(current_date)
@@ -678,7 +682,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
 
                 ref_day = first_week_date
                 self._compute_period_usage(
-                   values, current_iso_weekday, ref_day, WEEKLY_PERIOD_TYPE
+                    values, current_iso_weekday, ref_day, WEEKLY_PERIOD_TYPE
                 )
 
                 # compute month
@@ -690,7 +694,7 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
 
                 ref_day = first_month_date
                 self._compute_period_usage(
-                   values, current_day, ref_day, MONTHLY_PERIOD_TYPE
+                    values, current_day, ref_day, MONTHLY_PERIOD_TYPE
                 )
 
                 # reset error

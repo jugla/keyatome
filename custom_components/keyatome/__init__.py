@@ -48,7 +48,6 @@ async def async_unload_entry(hass, config_entry):
         )
     )
     if unload_ok:
-
         # remove config flow coordinator
         hass.data[DOMAIN][DATA_COORDINATOR].pop(config_entry.entry_id)
         remove_listener = hass.data[DOMAIN][DATA_LISTENER].pop(config_entry.entry_id)

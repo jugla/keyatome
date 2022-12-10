@@ -585,12 +585,10 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
             # set to None
             values = retrieve_values
         else:
-
             self._current_values = retrieve_values
             self._robust_values = self._current_values
             if self._former_values is not None:
                 try:
-
                     # compare values
                     if (
                         self._former_values["data"][-1]["time"]
@@ -657,14 +655,12 @@ class AtomePeriodServerEndPoint(AtomeGenericServerEndPoint):
         # dump
         _LOGGER.debug("%s : DUMP value: %s", self._period_type, values)
         if values is not None:
-
             try:
                 current_date = datetime.fromisoformat(values["data"][-1]["time"])
             except:
                 Error_In_Data2 = True
 
             if not Error_In_Data2:
-
                 # compute DAY
                 nb_of_day = 1
                 ref_day = current_date
@@ -780,7 +776,6 @@ class AtomeDiagnostic(SensorEntity):
         self._sensors_to_follow = sensors_to_follow
 
     def _async_atome_sensor_state_listener(self, event):
-
         # retrieve state
         new_state = event.data.get("new_state")
         if new_state is None:

@@ -10,16 +10,16 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorStateClass,
 )
+from homeassistant.const import UnitOfEnergy, UnitOfPower
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
     CONF_NAME,
     CONF_PASSWORD,
     CONF_USERNAME,
-    ENERGY_KILO_WATT_HOUR,
-    POWER_WATT,
     STATE_UNAVAILABLE,
     STATE_UNKNOWN,
 )
+
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo, EntityCategory
@@ -986,7 +986,7 @@ class AtomeLiveSensor(AtomeGenericSensor):
 
         # HA attributes
         self._attr_device_class = SensorDeviceClass.POWER
-        self._attr_native_unit_of_measurement = POWER_WATT
+        self._attr_native_unit_of_measurement = UnitOfPower.WATT
         self._attr_state_class = SensorStateClass.MEASUREMENT
 
     @property
@@ -1037,7 +1037,7 @@ class AtomePeriodSensor(RestoreEntity, AtomeGenericSensor):
 
         # HA attributes
         self._attr_device_class = SensorDeviceClass.ENERGY
-        self._attr_native_unit_of_measurement = ENERGY_KILO_WATT_HOUR
+        self._attr_native_unit_of_measurement = UnitOfEnergy.KILO_WATT_HOUR
         self._attr_state_class = SensorStateClass.TOTAL_INCREASING
 
     async def async_added_to_hass(self):

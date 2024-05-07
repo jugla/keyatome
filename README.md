@@ -73,10 +73,15 @@ To add price in dashboard, please in configuration.yaml add the following entity
 template:
   - sensor:
       - name: atome_daily_price
-        state: "{{ state_attr('sensor.atome_daily', 'price') | float }}"
-        unit_of_measurement: 'EUR'
+        state: >-
+           {% if state_attr('sensor.atome_daily', 'price') == 'unknown' %}
+              unknown
+           {% else %}
+              {{ state_attr('sensor.atome_daily', 'price') }}
+           {% endif %}
+        #unit_of_measurement: 'EUR'
         state_class: total_increasing
-        device_class: monetary
+        #device_class: monetary
 ```
 
 

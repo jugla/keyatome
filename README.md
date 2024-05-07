@@ -83,7 +83,8 @@ template:
         state_class: total_increasing
         #device_class: monetary
 ```
-
+## Known server behaviour
+If for any reason you select, in your mobile apps TOTAL Account, another contract you should reactivate your integration in HA
 
 ## Breaking changes
 <details><summary>detail description</summary>

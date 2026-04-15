@@ -86,6 +86,8 @@ template:
 ## Known server behaviour
 If for any reason you select, in your mobile apps TOTAL Account, another contract you should reactivate your integration in HA
 
+**Since 1rst April 2026, the Total Energy API is in v3 and this HA integration doesn't work anymore. Helps is needed to perform reverse engeneering.**
+
 ## Breaking changes
 <details><summary>detail description</summary>
 
